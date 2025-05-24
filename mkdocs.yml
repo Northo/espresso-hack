@@ -5,6 +5,8 @@ theme:
   name: material
   palette:
     primary: red
+  features:
+    - navigation.footer
 markdown_extensions:
   - md_in_html
   - footnotes

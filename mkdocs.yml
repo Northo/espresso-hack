@@ -2,6 +2,8 @@ site_name: Hacking ECM Casa IV
 site_url: https://northo.github.io/espresso-hack
 theme:
   name: material
+  palette:
+    primary: red
 markdown_extensions:
   - md_in_html
   - footnotes

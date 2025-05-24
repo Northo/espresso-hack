@@ -1,5 +1,6 @@
 site_name: Hacking ECM Casa IV
 site_url: https://northo.github.io/espresso-hack
+repo_url: https://github.com/Northo/espresso-hack
 theme:
   name: material
   palette:

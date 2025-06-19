@@ -1,110 +1,150 @@
-/*
-  Exploration of how to best implement the button interface.
-  The buttons are used to change the PID parameters, and the mode.
-
-*/
-
 #include <AceButton.h>
 #include <LiquidCrystal_I2C.h>
+#include <Array.h>
+#include <avr/pgmspace.h>
 
-// ── Buttons ──────────────────────────────────────────────
-const int BTN_NEXT_PIN = 10;
-const int BTN_INC_PIN  = 8;
-const int BTN_DEC_PIN  = 9;
+using namespace ace_button;
 
-constexpr int ButtonPins[] = {BTN_NEXT_PIN, BTN_INC_PIN, BTN_DEC_PIN};
-constexpr size_t NUM_BUTTONS = sizeof(ButtonPins) / sizeof(ButtonPins[0]);
+// ── Pin Definitions ──────────────────────────────────────
+constexpr uint8_t BTN_NEXT_PIN = 10;
+constexpr uint8_t BTN_INC_PIN  = 8;
+constexpr uint8_t BTN_DEC_PIN  = 9;
+Array<uint8_t, 3> ButtonPins = {{ BTN_NEXT_PIN, BTN_INC_PIN, BTN_DEC_PIN }};
+constexpr size_t NUM_BUTTONS = 3;
 
-ace_button::AceButton buttons[NUM_BUTTONS];
-
-LiquidCrystal_I2C lcd(0x27,20,4);
-bool lastBlinkState = true;
-
-
-// Params
-
+// ── Parameter Struct & Count ─────────────────────────────
 struct Param {
-  const char* name;
   float value, min, max, step;
 };
-Param params[] = {
-    {"Kp", 1, 0, 100, 2},
-    {"Ki", 0, 0, 10, 1},
-};
+constexpr size_t NUM_PARAMS = 2;
+
+// ── Names in Flash (PROGMEM) ─────────────────────────────
+const char kp_name[] PROGMEM = "Kp";
+const char ki_name[] PROGMEM = "Ki";
+const char* const ParamNames[NUM_PARAMS] PROGMEM = { kp_name, ki_name };
+
+// ── Runtime Parameter Store ─────────────────────────────
+Array<Param, NUM_PARAMS> params;
+
+void initParams() {
+  params[0] = { 1.0f, 0.0f, 10.0f, 1.0f };
+  params[1] = { 0.0f, 0.0f, 10.0f, 1.0f };
+}
 size_t currentParam = 0;
-constexpr size_t NUM_PARAMS = sizeof(params) / sizeof(params[0]);
 
-// UI
-long lastUiUpdate = millis();
+// Forward declaration for button events
+void handleButtonEvent(AceButton*, uint8_t, uint8_t);
 
-void handlePress(ace_button::AceButton*, uint8_t, uint8_t);
-
-void setup() {
-  for (size_t i = 0; i < NUM_BUTTONS; i++) {
-    pinMode(ButtonPins[i], INPUT_PULLUP);
-    buttons[i].init(ButtonPins[i], HIGH, i);
-    buttons[i].setEventHandler(handlePress);
-    ace_button::ButtonConfig* config = buttons[i].getButtonConfig();
-    config->setFeature(ace_button::ButtonConfig::kFeatureRepeatPress);
-    config->setFeature(ace_button::ButtonConfig::kFeatureSuppressAfterRepeatPress);
-    config->setRepeatPressInterval(500);
+// ── Button Manager ───────────────────────────────────────
+class ButtonManager {
+public:
+  ButtonManager() {
+    for (size_t i = 0; i < NUM_BUTTONS; ++i) {
+      buttons_[i].init(ButtonPins[i], HIGH, i);
+      buttons_[i].setEventHandler(handleButtonEvent);
+    }
+    auto* cfg = buttons_[0].getButtonConfig();
+    cfg->setFeature(ButtonConfig::kFeatureRepeatPress);
+    cfg->setFeature(ButtonConfig::kFeatureSuppressAfterRepeatPress);
+    cfg->setRepeatPressInterval(500);
   }
-  Serial.begin(9600);
-  lcd.init();
-  lcd.backlight();
-  lcd.cursor();
-  lcd.blink();
+
+  void begin() {
+    // Simple range-based pinMode setup
+    for (auto pin : ButtonPins) {
+      pinMode(pin, INPUT_PULLUP);
+    }
+  }
+
+  void poll() {
+    for (size_t i = 0; i < NUM_BUTTONS; ++i) {
+      buttons_[i].check();
+    }
+  }
+
+private:
+  Array<AceButton, NUM_BUTTONS> buttons_;
+};
+
+// ── Display Manager ──────────────────────────────────────
+class Display {
+public:
+  Display() : lcd_(0x27, 20, 4) {}
+
+  void begin() {
+    lcd_.init();
+    lcd_.backlight();
+  }
+
+  void showAll() {
+    lcd_.clear();
+    for (size_t i = 0; i < NUM_PARAMS; ++i) {
+      // Fetch name from PROGMEM
+      char nameBuf[6];
+      strcpy_P(nameBuf, (char*)pgm_read_word(&(ParamNames[i])));
+
+      lcd_.setCursor(i * 7, 0);
+      lcd_.print(nameBuf);
+      lcd_.print(params[i].value, 0);
+
+      if (i == currentParam) {
+        lcd_.setCursor(i * 7 + strlen(nameBuf), 1);
+        lcd_.print("^");
+      }
+    }
+  }
+
+private:
+  LiquidCrystal_I2C lcd_;
+};
+
+// ── Globals ──────────────────────────────────────────────
+ButtonManager buttonManager;
+Display       display;
+
+// Timing for display updates (avoid redrawing every loop)
+unsigned long lastDisplayUpdate = 0;
+constexpr unsigned long DISPLAY_INTERVAL = 200;
+
+// ── Arduino Standard Hooks ───────────────────────────────────────────────
+void setup() {
+  initParams();          // initialize parameter values
+  buttonManager.begin();
+  display.begin();
 }
 
 void loop() {
-  for (size_t i = 0; i < NUM_BUTTONS; i++) {
-    buttons[i].check();
-  }
-  handleUI();
-}
-
-
-void handleUI() {
-  if (millis() - lastUiUpdate > 100) {
-    lcd.setCursor(0, 0);
-    for (size_t i = 0; i < NUM_PARAMS; i++) {
-      bool isCurrentParam = i == currentParam;
-      lcd.print(params[i].value, 0);
-      lcd.print(" ");
-    }
-    lcd.setCursor(currentParam * 2, 0);
-    lastUiUpdate = millis();
+  buttonManager.poll();
+  unsigned long now = millis();
+  if (now - lastDisplayUpdate >= DISPLAY_INTERVAL) {
+    display.showAll();
+    lastDisplayUpdate = now;
   }
 }
 
-//void handlePress(int buttonId) {
-void handlePress(ace_button::AceButton* button, uint8_t eventType,
-    uint8_t /*buttonState*/) {
-    
-  int step;
-  switch (eventType) {
-    case ace_button::AceButton::kEventReleased:
-      step = 1;
-      break;
-    case ace_button::AceButton::kEventRepeatPressed:
-      step = 4;
-      break;
-    default:
-      return;
+// ── Button Event Handler ─────────────────────────────────────────────────
+void handleButtonEvent(AceButton* button, uint8_t eventType, uint8_t /*state*/) {
+  int step = 0;
+  if (eventType == AceButton::kEventReleased) {
+    step = 1;
+  } else if (eventType == AceButton::kEventRepeatPressed) {
+    step = 4;
   }
+  if (!step) return;
 
   switch (button->getId()) {
     case 0:
       currentParam = (currentParam + 1) % NUM_PARAMS;
       break;
     case 1: {
-      auto &p = params[currentParam];
+      auto& p = params[currentParam];
       p.value = constrain(p.value + p.step * step, p.min, p.max);
       break;
     }
     case 2: {
-      auto &p = params[currentParam];
+      auto& p = params[currentParam];
       p.value = constrain(p.value - p.step * step, p.min, p.max);
+      break;
     }
   }
 }

@@ -1,4 +1,5 @@
 #include <AceButton.h>
+#include <LiquidCrystal_I2C.h>
 
 namespace Config {
 
@@ -181,16 +182,53 @@ private:
   ParameterTuner* tuner_;
 };
 
+class DisplayManager {
+public:
+  DisplayManager(ParameterTuner* tuner, int maxWidth = 3)
+  : tuner_(tuner), lcd(0x27,  16, 2), maxWidth(maxWidth) {};
+
+  void begin() {
+    lcd.init();
+    lcd.backlight();
+    lcd.cursor();
+    lcd.blink();
+  };
+
+  void draw() {
+    for (int i = 0; i < tuner_->kParameterCount; i++) {
+      drawValueAtLocation(tuner_->getParameter(i)->value, i);
+    }
+    lcd.setCursor(tuner_->getCurrentParam() * (maxWidth + 1) + maxWidth - 1, 0);
+  };
+
+  void drawValueAtLocation(int value, int location) {
+    lcd.setCursor(location * (maxWidth + 1), 0);
+    char valBuf[maxWidth];
+    dtostrf(value, maxWidth, 0, valBuf);
+    lcd.print(valBuf);
+  }
+
+private:
+  int maxWidth;
+  ParameterTuner* tuner_;
+  LiquidCrystal_I2C lcd;
+};
+
 ParameterTuner tuner;
 
+DisplayManager displayManager(&tuner);
 SerialLogger serialLogger(&tuner);
 
 Callback<SerialLogger> serialLoggerCallback(&serialLogger, &SerialLogger::logTunerState);
+Callback<DisplayManager> displayManagerCallback(&displayManager, &DisplayManager::draw);
 
 void setup() {
   Serial.begin(9600);
   tuner.begin();
   tuner.addCallback(&serialLoggerCallback);
+  tuner.addCallback(&displayManagerCallback);
+  displayManager.begin();
+  displayManager.draw();
 }
 
 void loop() {

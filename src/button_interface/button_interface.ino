@@ -2,8 +2,17 @@
 #include <LiquidCrystal_I2C.h>
 
 namespace Config {
+  // Pin definitions
+  constexpr int NEXT_BUTTON_PIN = 8;
+  constexpr int INC_BUTTON_PIN = 9;
+  constexpr int DEC_BUTTON_PIN = 10;
 
-};
+  constexpr int LCD_PARAM_WIDTH = 3; // How many characters for displaying a parameter value
+
+  // Button behaviour
+  constexpr int REPEAT_PRESS_DELAY_MS = 700;
+  constexpr int REPEAT_PRESS_INTERVAL_MS = 300;
+}
 
 class ParameterTuner;
 
@@ -16,8 +25,8 @@ public:
     repeatButtonConfig.setIEventHandler(this);
     repeatButtonConfig.setFeature(ace_button::ButtonConfig::kFeatureRepeatPress);
     repeatButtonConfig.setFeature(ace_button::ButtonConfig::kFeatureSuppressAfterRepeatPress);
-    repeatButtonConfig.setRepeatPressDelay(700);
-    repeatButtonConfig.setRepeatPressInterval(300);
+    repeatButtonConfig.setRepeatPressDelay(Config::REPEAT_PRESS_DELAY_MS);
+    repeatButtonConfig.setRepeatPressInterval(Config::REPEAT_PRESS_INTERVAL_MS);
 
     nextButton.init(&nextButtonConfig, nextButtonPin, HIGH, 0);
     incButton.init(&repeatButtonConfig, incButtonPin, HIGH, 1);
@@ -81,7 +90,7 @@ public:
   static constexpr size_t kParameterCount = 2;
 
   ParameterTuner()
-    : buttonManager_(this, 8, 9, 10), parameters_({ { 1.0, 0.0, 400.0, 2.4 }, { 1.0, 0.0, 10.0, 1.0 } }){};
+    : buttonManager_(this, Config::NEXT_BUTTON_PIN, Config::INC_BUTTON_PIN, Config::DEC_BUTTON_PIN), parameters_({ { 1.0, 0.0, 400.0, 2.4 }, { 1.0, 0.0, 10.0, 1.0 } }){};
 
   void setParameter(int parameterId, float value) {
     auto& parameter = parameters_[parameterId];
@@ -214,23 +223,44 @@ private:
   LiquidCrystal_I2C lcd;
 };
 
-ParameterTuner tuner;
+class SmokerUI {
+public:
+  SmokerUI ()
+  : tuner_()
+  , displayManager_(&tuner_)
+  , serialLogger_(&tuner_)
+  , serialLoggerCallback_(&serialLogger_, &SerialLogger::logTunerState)
+  , displayManagerCallback_(&displayManager_, &DisplayManager::draw) 
+  {} ;
 
-DisplayManager displayManager(&tuner);
-SerialLogger serialLogger(&tuner);
+  void begin() {
+    tuner_.begin();
+    tuner_.addCallback(&serialLoggerCallback_);
+    tuner_.addCallback(&displayManagerCallback_);
 
-Callback<SerialLogger> serialLoggerCallback(&serialLogger, &SerialLogger::logTunerState);
-Callback<DisplayManager> displayManagerCallback(&displayManager, &DisplayManager::draw);
+    displayManager_.begin();
+    displayManager_.draw();
+  }
+
+  void check() {
+    tuner_.check();
+  }
+
+private:
+  ParameterTuner tuner_;
+  DisplayManager displayManager_;
+  SerialLogger serialLogger_;
+  Callback<SerialLogger> serialLoggerCallback_;
+  Callback<DisplayManager> displayManagerCallback_;
+};
+
+SmokerUI ui;
 
 void setup() {
   Serial.begin(9600);
-  tuner.begin();
-  tuner.addCallback(&serialLoggerCallback);
-  tuner.addCallback(&displayManagerCallback);
-  displayManager.begin();
-  displayManager.draw();
+  ui.begin();
 }
 
 void loop() {
-  tuner.check();
+  ui.check();
 }

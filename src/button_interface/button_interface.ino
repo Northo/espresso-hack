@@ -46,6 +46,28 @@ struct Parameter {
   float step;
 };
 
+class CallbackInterface {
+public:
+  virtual ~CallbackInterface() {}
+  virtual void invoke() = 0;
+};
+
+template <class T>
+class Callback : public CallbackInterface {
+public:
+  Callback(T* instance, void (T::*func)())
+  : instance(instance), memberFunc(func) {};
+
+  void invoke() {
+    (instance->*memberFunc)();
+  }
+
+private:
+  T* instance;
+  void (T::*memberFunc)();
+};
+
+
 class ParameterTuner {
 public:
   static constexpr size_t kParameterCount = 2;
@@ -55,7 +77,8 @@ public:
 
   void setParameter(int parameterId, float value) {
     auto& parameter = parameters_[parameterId];
-    parameter.value = value;  //constrain(value, parameter.min, parameter.max);
+    parameter.value = constrain(value, parameter.min, parameter.max);
+    notify();
   };
 
   const Parameter* getParameter(int parameterId) {
@@ -64,7 +87,7 @@ public:
 
   void updateParameter(int parameterId, float change) {
     auto& parameter = parameters_[parameterId];
-    parameter.value = constrain(parameter.value + change * parameter.step, parameter.min, parameter.max);
+    setParameter(parameterId, parameter.value + change * parameter.step);
   }
 
   int getCurrentParam() {
@@ -73,10 +96,15 @@ public:
 
   void setCurrentParam(int param) {
     currentParam = param;
+    notify();
   }
 
   void nextPram() {
     setCurrentParam((getCurrentParam() + 1) % kParameterCount);
+  }
+
+  void addCallback(CallbackInterface *callback) {
+    callback_ = callback;
   }
 
   void begin() {
@@ -91,6 +119,11 @@ private:
   ButtonManager buttonManager_;
   Parameter parameters_[kParameterCount];
   int currentParam = 0;
+  CallbackInterface *callback_;
+  
+  void notify() {
+    callback_->invoke();
+  }
 };
 
 void ButtonManager::handleEvent(ace_button::AceButton* button, uint8_t event_type, uint8_t /* buttonState */) {
@@ -103,27 +136,42 @@ void ButtonManager::handleEvent(ace_button::AceButton* button, uint8_t event_typ
     {
       const auto currentParam = parameterTuner->getCurrentParam();
       parameterTuner->updateParameter(currentParam, (id == 1) ? 1 : -1);
-      Serial.print("Setting paramaeter ");
-      Serial.print(currentParam);
-      Serial.print(" to ");
-      Serial.println(parameterTuner->getParameter(currentParam)->value);
       break;
     }
     case 0:
     {
       parameterTuner->nextPram();
-      Serial.print("Current param: ");
-      Serial.println(parameterTuner->getCurrentParam());
       break;
     }
   }
 }
 
+class SerialLogger {
+public:
+  SerialLogger (ParameterTuner *tuner)
+  : tuner_(tuner) {};
+
+  void logTunerState() {
+      Serial.print("Current param: ");
+      Serial.print(tuner_->getCurrentParam());
+      Serial.print(" . Value: ");
+      Serial.println(tuner_->getParameter(tuner_->getCurrentParam())->value);
+  }
+
+private:
+  ParameterTuner *tuner_;
+};
+
 ParameterTuner tuner;
+
+SerialLogger serialLogger(&tuner);
+
+Callback<SerialLogger> serialLoggerCallback(&serialLogger, &SerialLogger::logTunerState);
 
 void setup() {
   Serial.begin(9600);
   tuner.begin();
+  tuner.addCallback(&serialLoggerCallback);
 }
 
 void loop() {

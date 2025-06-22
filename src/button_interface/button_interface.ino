@@ -10,14 +10,18 @@ class ButtonManager : public ace_button::IEventHandler {
 public:
   ButtonManager(ParameterTuner* parameterTuner, int nextButtonPin, int incButtonPin, int decButtonPin)
     : parameterTuner(parameterTuner) {
-      auto *buttonConfig = ace_button::ButtonConfig::getSystemButtonConfig();
 
-      buttonConfig->setIEventHandler(this);
-      nextButton.init(buttonConfig, nextButtonPin, HIGH, 0);
-      incButton.init(buttonConfig, incButtonPin, HIGH, 1);
-      decButton.init(buttonConfig, decButtonPin, HIGH, 2);
+    nextButtonConfig.setIEventHandler(this);
+    repeatButtonConfig.setIEventHandler(this);
+    repeatButtonConfig.setFeature(ace_button::ButtonConfig::kFeatureRepeatPress);
+    repeatButtonConfig.setFeature(ace_button::ButtonConfig::kFeatureSuppressAfterRepeatPress);
+    repeatButtonConfig.setRepeatPressDelay(700);
+    repeatButtonConfig.setRepeatPressInterval(300);
 
-    };
+    nextButton.init(&nextButtonConfig, nextButtonPin, HIGH, 0);
+    incButton.init(&repeatButtonConfig, incButtonPin, HIGH, 1);
+    decButton.init(&repeatButtonConfig, decButtonPin, HIGH, 2);
+  };
 
   void begin() {
     pinMode(nextButton.getPin(), INPUT_PULLUP);
@@ -36,6 +40,9 @@ private:
   ace_button::AceButton incButton;
   ace_button::AceButton decButton;
 
+  ace_button::ButtonConfig repeatButtonConfig;
+  ace_button::ButtonConfig nextButtonConfig;
+
   void handleEvent(ace_button::AceButton* /* button */, uint8_t event_type, uint8_t /* buttonState */);
 };
 
@@ -52,11 +59,11 @@ public:
   virtual void invoke() = 0;
 };
 
-template <class T>
+template<class T>
 class Callback : public CallbackInterface {
 public:
   Callback(T* instance, void (T::*func)())
-  : instance(instance), memberFunc(func) {};
+    : instance(instance), memberFunc(func){};
 
   void invoke() {
     (instance->*memberFunc)();
@@ -73,7 +80,7 @@ public:
   static constexpr size_t kParameterCount = 2;
 
   ParameterTuner()
-    : buttonManager_(this, 8, 9, 10), parameters_({ { 1.0, 0.0, 10.0, 1.0 }, { 1.0, 0.0, 10.0, 1.0 } }){};
+    : buttonManager_(this, 8, 9, 10), parameters_({ { 1.0, 0.0, 400.0, 2.4 }, { 1.0, 0.0, 10.0, 1.0 } }){};
 
   void setParameter(int parameterId, float value) {
     auto& parameter = parameters_[parameterId];
@@ -103,8 +110,12 @@ public:
     setCurrentParam((getCurrentParam() + 1) % kParameterCount);
   }
 
-  void addCallback(CallbackInterface *callback) {
-    callback_ = callback;
+  bool addCallback(CallbackInterface* callback) {
+    if (numCallbacks == kMaxCallbacks) {
+      return false;
+    }
+    callbacks_[numCallbacks] = callback;
+    numCallbacks++;
   }
 
   void begin() {
@@ -119,47 +130,55 @@ private:
   ButtonManager buttonManager_;
   Parameter parameters_[kParameterCount];
   int currentParam = 0;
-  CallbackInterface *callback_;
-  
+  static constexpr size_t kMaxCallbacks = 2;
+  int numCallbacks = 0;
+  CallbackInterface* callbacks_[kMaxCallbacks] = {nullptr};
+
   void notify() {
-    callback_->invoke();
+    for (int i = 0; i < numCallbacks; i++) {
+      callbacks_[i]->invoke();
+    }
   }
 };
 
 void ButtonManager::handleEvent(ace_button::AceButton* button, uint8_t event_type, uint8_t /* buttonState */) {
-  if (event_type != ace_button::AceButton::kEventReleased) return;
-
   const auto id = button->getId();
   switch (id) {
     case 1:
     case 2:
-    {
-      const auto currentParam = parameterTuner->getCurrentParam();
-      parameterTuner->updateParameter(currentParam, (id == 1) ? 1 : -1);
-      break;
-    }
+      {
+        if (!(event_type == ace_button::AceButton::kEventReleased
+              || event_type == ace_button::AceButton::kEventRepeatPressed)) return;
+
+        const auto currentParam = parameterTuner->getCurrentParam();
+        int direction = (id == 1) ? 1 : -1;
+        int magnitude = (event_type == ace_button::AceButton::kEventReleased) ? 1 : 5;
+        parameterTuner->updateParameter(currentParam, direction * magnitude);
+        break;
+      }
     case 0:
-    {
-      parameterTuner->nextPram();
-      break;
-    }
+      {
+        if (event_type != ace_button::AceButton::kEventReleased) return;
+        parameterTuner->nextPram();
+        break;
+      }
   }
 }
 
 class SerialLogger {
 public:
-  SerialLogger (ParameterTuner *tuner)
-  : tuner_(tuner) {};
+  SerialLogger(ParameterTuner* tuner)
+    : tuner_(tuner){};
 
   void logTunerState() {
-      Serial.print("Current param: ");
-      Serial.print(tuner_->getCurrentParam());
-      Serial.print(" . Value: ");
-      Serial.println(tuner_->getParameter(tuner_->getCurrentParam())->value);
+    Serial.print("Current param: ");
+    Serial.print(tuner_->getCurrentParam());
+    Serial.print(" . Value: ");
+    Serial.println(tuner_->getParameter(tuner_->getCurrentParam())->value);
   }
 
 private:
-  ParameterTuner *tuner_;
+  ParameterTuner* tuner_;
 };
 
 ParameterTuner tuner;

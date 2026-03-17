@@ -6,6 +6,9 @@
 #include "relay.h"
 #include "thermocouple.h"
 #include "display.h"
+#include "network/wifi.h"
+#include "network/ota.h"
+#include "network/http_server.h"
 
 MachineState machine_state;
 
@@ -16,6 +19,10 @@ void setup() {
     initThermocouple();
     relayInit();
     setupController(machine_state);
+    
+    setupWiFi();
+    setupOTA();
+    initHTTPServer(machine_state);
 }
 
 void loop() {
@@ -27,5 +34,8 @@ void loop() {
     updateThermocoupleReading(machine_state);
     updateController(machine_state);
     updateRelay(machine_state);
+
     updateDisplay(machine_state);
+    handleOTA();
+    handleHTTPServer();
 }

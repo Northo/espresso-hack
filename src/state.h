@@ -6,6 +6,14 @@ enum class ControlMode {
     MANUAL_MODE,
 };
 
+inline const char* controlModeToString(ControlMode mode) {
+    switch (mode) {
+        case ControlMode::PID:         return "PID";
+        case ControlMode::MANUAL_MODE: return "MANUAL";
+        default:                       return "UNKNOWN";
+    }
+}
+
 struct MachineState {
     ControlMode mode = ControlMode::PID;
 

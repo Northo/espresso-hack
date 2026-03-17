@@ -15,11 +15,14 @@ void setupController(MachineState &state) {
 
 void updateController(MachineState &state) {
     if (state.mode == ControlMode::PID) {
+        pid.SetMode(AUTOMATIC); // triggers bumpless transfer
         pid.Compute();
     } else if (state.mode == ControlMode::MANUAL_MODE) {
+        pid.SetMode(MANUAL);
         state.heater_power = state.manual_power;
     } else {
         // Panic! Nothing else implemented
+        pid.SetMode(MANUAL);
         state.heater_power = 0;
     }
 }

@@ -5,12 +5,14 @@
 #include "controller.h"
 #include "relay.h"
 #include "thermocouple.h"
+#include "display.h"
 
 MachineState machine_state;
 
 void setup() {
     Serial.begin(115200);
     ESP_LOGI("Main", "Starting up...");
+    initDisplay();
     initThermocouple();
     relayInit();
     setupController(machine_state);
@@ -25,4 +27,5 @@ void loop() {
     updateThermocoupleReading(machine_state);
     updateController(machine_state);
     updateRelay(machine_state);
+    updateDisplay(machine_state);
 }

@@ -9,6 +9,7 @@
 #include "network/wifi.h"
 #include "network/ota.h"
 #include "network/http_server.h"
+#include "button_interface.h"
 
 MachineState machine_state;
 
@@ -23,6 +24,7 @@ void setup() {
     setupWiFi();
     setupOTA();
     initHTTPServer(machine_state);
+    setupButtons(machine_state);  // Must happen after controller setup
 }
 
 void loop() {
@@ -34,6 +36,7 @@ void loop() {
     updateThermocoupleReading(machine_state);
     updateController(machine_state);
     updateRelay(machine_state);
+    handleButtons(machine_state);
 
     updateDisplay(machine_state);
     handleOTA();

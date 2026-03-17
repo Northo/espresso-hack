@@ -82,7 +82,7 @@ void updateDisplay(const MachineState& state) {
     const bool is_pid = (state.mode == ControlMode::PID);
     spr.setTextDatum(MR_DATUM);
     spr.setTextColor(is_pid ? CLR_PID : CLR_MANUAL, CLR_BG);
-    spr.drawString(is_pid ? "PID" : "MANUAL", W - 8, HEADER_H / 2);
+    spr.drawString(controlModeToString(state.mode), W - 8, HEADER_H / 2);
 
     // ── Sections ──────────────────────────────────────────────────────────
     char buf[16];

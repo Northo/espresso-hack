@@ -15,3 +15,6 @@ constexpr int THERMOCUPLE_READ_INTERVAL = 100; // ms
 
 constexpr const char *WIFI_HOSTNAME = "espresso-controller";
 constexpr int OTA_PORT = 3232;
+
+constexpr int STEAM_BUTTON_PIN = 2;
+constexpr double STEAM_TARGET_TEMPERATURE = 130.0; // °C

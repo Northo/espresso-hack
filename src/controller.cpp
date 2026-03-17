@@ -20,6 +20,9 @@ void updateController(MachineState &state) {
     } else if (state.mode == ControlMode::MANUAL_MODE) {
         pid.SetMode(MANUAL);
         state.heater_power = state.manual_power;
+    } else if (state.mode == ControlMode::BANG_BANG) {
+        pid.SetMode(MANUAL);
+        state.heater_power = (state.current_temperature < state.target_temperature) ? state.bang_bang_power : 0.0;
     } else {
         // Panic! Nothing else implemented
         pid.SetMode(MANUAL);

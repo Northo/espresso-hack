@@ -28,7 +28,7 @@ struct MachineState {
     double pid_power = 0.0;
 
     // Feed forward
-    double do_feed_forward = false;
+    bool do_feed_forward = false;
     long feed_forward_start_time = 0;
     long feed_forward_duration = DEFAULT_FEED_FORWARD_DURATION;
     double feed_forward_power = DEFAULT_FEED_FORWARD_POWER;

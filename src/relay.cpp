@@ -8,8 +8,27 @@ static unsigned long windowStartTime = 0;
 void relayInit() {
     pinMode(SSR_PIN, OUTPUT);
     digitalWrite(SSR_PIN, LOW);
+
+    pinMode(PUMP_PIN, OUTPUT);
+    digitalWrite(PUMP_PIN, HIGH); // Assuming active LOW for pump
+    pinMode(SOLENOID_PIN, OUTPUT);
+    digitalWrite(SOLENOID_PIN, HIGH); // Assuming active LOW for solenoid
     
     windowStartTime = millis();
+}
+
+void updatePumpSolenoid(MachineState &state) {
+     if (state.pump_active) {
+        digitalWrite(PUMP_PIN, LOW); // Active LOW
+    } else {
+        digitalWrite(PUMP_PIN, HIGH);
+    }
+
+    if (state.solenoid_active) {
+        digitalWrite(SOLENOID_PIN, LOW); // Active LOW
+    } else {
+        digitalWrite(SOLENOID_PIN, HIGH);
+    }
 }
 
 void updateRelay(MachineState &state) {
@@ -32,4 +51,6 @@ void updateRelay(MachineState &state) {
     } else {
         digitalWrite(SSR_PIN, LOW);
     }
+
+    updatePumpSolenoid(state);
 };

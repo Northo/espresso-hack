@@ -33,6 +33,15 @@ struct MachineState {
     long feed_forward_duration = DEFAULT_FEED_FORWARD_DURATION;
     double feed_forward_power = DEFAULT_FEED_FORWARD_POWER;
 
+    // Auto brew mode
+    bool auto_brew_enabled = false;
+    long auto_brew_start_time = 0;
+    bool pump_active = false;
+    bool solenoid_active = false;
+    long auto_brew_preinfusion_duration = DEFAULT_AUTO_BREW_PREINFUSION_DURATION;
+    long auto_brew_duration = DEFAULT_AUTO_BREW_DURATION;
+    long auto_brew_bloom_duration = DEFAULT_AUTO_BREW_BLOOM_DURATION;
+
     // Relay parameters
     int relay_window_size = 1000; // ms for time-proportional control
 

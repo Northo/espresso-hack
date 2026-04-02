@@ -6,25 +6,26 @@ static TFT_eSPI tft;
 static TFT_eSprite spr(&tft);
 
 // Palette
-static const uint16_t CLR_BG      = TFT_BLACK;
-static const uint16_t CLR_VALUE   = TFT_WHITE;
-static const uint16_t CLR_LABEL   = 0x7BEF; // mid-grey
+static const uint16_t CLR_BG = TFT_BLACK;
+static const uint16_t CLR_VALUE = TFT_WHITE;
+static const uint16_t CLR_LABEL = 0x7BEF;   // mid-grey
 static const uint16_t CLR_DIVIDER = 0x39E7; // dark grey
-static const uint16_t CLR_TEMP    = 0xFD20; // orange  (hot)
-static const uint16_t CLR_PID     = 0x07E0; // green
-static const uint16_t CLR_MANUAL  = 0xFFE0; // yellow
+static const uint16_t CLR_TEMP = 0xFD20;    // orange  (hot)
+static const uint16_t CLR_PID = 0x07E0;     // green
+static const uint16_t CLR_MANUAL = 0xFFE0;  // yellow
 
 // Layout constants (portrait 170x320)
-static const int W        = TFT_WIDTH;   // 170
-static const int H        = TFT_HEIGHT;  // 320
+static const int W = TFT_WIDTH;  // 170
+static const int H = TFT_HEIGHT; // 320
 static const int HEADER_H = 32;
 static const int SECTION_H = (H - HEADER_H) / 3; // 96 px per section
 
 // Draws one value section (label, large numeric value, unit suffix).
 // section: 0 = temperature, 1 = setpoint, 2 = power
-static void drawSection(int section, const char* label,
-                        const char* value, const char* unit,
-                        uint16_t value_color) {
+static void drawSection(int section, const char *label,
+                        const char *value, const char *unit,
+                        uint16_t value_color)
+{
     const int y = HEADER_H + section * SECTION_H;
 
     spr.drawFastHLine(0, y, W, CLR_DIVIDER);
@@ -50,7 +51,8 @@ static void drawSection(int section, const char* label,
     spr.drawString(unit, 8 + val_w + 4, baseline);
 }
 
-void initDisplay() {
+void initDisplay()
+{
     tft.init();
     tft.setRotation(0);
 
@@ -65,10 +67,12 @@ void initDisplay() {
     spr.setTextWrap(false);
 }
 
-void updateDisplay(const MachineState& state) {
+void updateDisplay(const MachineState &state)
+{
     // Limit refresh rate to 10 Hz
     static unsigned long last_update = 0;
-    if (millis() - last_update < 100) return;
+    if (millis() - last_update < 100)
+        return;
     last_update = millis();
 
     spr.fillSprite(CLR_BG);
@@ -90,8 +94,16 @@ void updateDisplay(const MachineState& state) {
     snprintf(buf, sizeof(buf), "%.1f", state.current_temperature);
     drawSection(0, "TEMPERATURE", buf, "C", CLR_TEMP);
 
-    snprintf(buf, sizeof(buf), "%.1f", state.target_temperature);
-    drawSection(1, "SETPOINT", buf, "C", CLR_VALUE);
+    if (!state.auto_brew_enabled)
+    {
+        snprintf(buf, sizeof(buf), "%.1f", state.target_temperature);
+        drawSection(1, "SETPOINT", buf, "C", CLR_VALUE);
+    }
+    else
+    {
+        snprintf(buf, sizeof(buf), "%.1f", (millis() - state.auto_brew_start_time) / 1000.0);
+        drawSection(1, "AUTO BREW", buf, "S", CLR_VALUE);
+    }
 
     snprintf(buf, sizeof(buf), "%.1f", state.heater_power);
     drawSection(2, "OUTPUT POWER", buf, "%", CLR_VALUE);

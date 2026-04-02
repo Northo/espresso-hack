@@ -22,7 +22,7 @@ void setup() {
     setupController(machine_state);
     
     setupWiFi();
-    setupOTA();
+    setupOTA(machine_state);
     initHTTPServer(machine_state);
     setupButtons(machine_state);  // Must happen after controller setup
 }

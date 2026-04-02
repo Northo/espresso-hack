@@ -70,6 +70,13 @@ static void handleConfig(MachineState& machine_state) {
         if (doc.containsKey("manual_power")) {
             machine_state.manual_power = doc["manual_power"].as<double>();
         }
+        if (doc.containsKey("feed_forward_duration")) {
+            machine_state.feed_forward_duration = doc["feed_forward_duration"].as<long>();
+        }
+        if (doc.containsKey("feed_forward_power")) {
+            machine_state.feed_forward_power = doc["feed_forward_power"].as<double>();
+        }
+        
 }
 
 static void handleNotFound() {
@@ -77,12 +84,17 @@ static void handleNotFound() {
 }
 
 void initHTTPServer(MachineState& machine_state) {
+    server.enableCORS(true);
     server.on("/api/config", HTTP_GET, [&machine_state]() {
         sendStatus(machine_state);
     });
-    server.on("/api/config", HTTP_POST, [&machine_state]() {
+    server.on("/api/config", HTTP_PATCH, [&machine_state]() {
         handleConfig(machine_state);
         sendStatus(machine_state);
+    });
+    // Serve 204 no content on OPTIONS request, to fix CORS preflight.
+    server.on("/api/config", HTTP_OPTIONS, []() {
+        server.send(204);
     });
     server.onNotFound(handleNotFound);
     server.begin();

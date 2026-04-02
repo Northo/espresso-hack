@@ -5,7 +5,7 @@
 
 static unsigned long last_ota_time = 0;
 
-void setupOTA() {
+void setupOTA(MachineState &machine_state) {
     ArduinoOTA.setHostname(WIFI_HOSTNAME);
     ArduinoOTA.setPort(OTA_PORT);
 
@@ -15,8 +15,10 @@ void setupOTA() {
     });
 
     ArduinoOTA
-    .onStart([]() {
+    .onStart([&machine_state]() {
       ESP_LOGI("OTA", "Start OTA update");
+      machine_state.mode = ControlMode::MANUAL_MODE;
+      machine_state.manual_power = 0;
     })
     .onEnd([]() {
       ESP_LOGI("OTA", "End OTA update");

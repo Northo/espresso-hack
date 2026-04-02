@@ -1,5 +1,7 @@
 #pragma once
 
-void setupOTA();
+#include "state.h"
+
+void setupOTA(MachineState &machine_state);
 
 void handleOTA();

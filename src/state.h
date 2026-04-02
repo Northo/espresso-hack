@@ -25,6 +25,13 @@ struct MachineState {
     double ki = DEFAULT_KI;
     double kd = DEFAULT_KD;
     int pid_sample_time = 250; // ms
+    double pid_power = 0.0;
+
+    // Feed forward
+    double do_feed_forward = false;
+    long feed_forward_start_time = 0;
+    long feed_forward_duration = DEFAULT_FEED_FORWARD_DURATION;
+    double feed_forward_power = DEFAULT_FEED_FORWARD_POWER;
 
     // Relay parameters
     int relay_window_size = 1000; // ms for time-proportional control

@@ -15,6 +15,16 @@ void setupController(MachineState &state)
     pid.SetSampleTime(state.pid_sample_time);
 }
 
+enum class BrewStage {
+    NONE,
+    PREINFUSION,
+    BLOOM,
+    BREWING,
+    DONE
+};
+
+static BrewStage brew_stage = BrewStage::NONE;
+
 void updateController(MachineState &state)
 {
     if (state.mode == ControlMode::PID)
@@ -61,11 +71,13 @@ void updateController(MachineState &state)
 
         if (elapsed < state.auto_brew_preinfusion_duration)
         {
+            brew_stage = BrewStage::PREINFUSION;
             state.pump_active = true;
             state.solenoid_active = true;
         }
         else if (elapsed < state.auto_brew_preinfusion_duration + state.auto_brew_bloom_duration)
         {
+            brew_stage = BrewStage::BLOOM;
             state.pump_active = false;
             state.solenoid_active = true;
         }
@@ -73,9 +85,21 @@ void updateController(MachineState &state)
         {
             state.pump_active = true;
             state.solenoid_active = true;
+            // Activate feed forward when brew starts
+            // TODO: give more control over power and duration
+            if (brew_stage != BrewStage::BREWING) {
+                // Transitioning into brew stage, start feed forward if not already active
+                if (!state.do_feed_forward) {
+                    state.do_feed_forward = true;
+                    state.feed_forward_start_time = millis();
+                }
+            }
+            brew_stage = BrewStage::BREWING;
+
         }
         else
         {
+            brew_stage = BrewStage::DONE;
             state.auto_brew_enabled = false;
             state.pump_active = false;
             state.solenoid_active = false;

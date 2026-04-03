@@ -15,7 +15,8 @@ void setupController(MachineState &state)
     pid.SetSampleTime(state.pid_sample_time);
 }
 
-enum class BrewStage {
+enum class BrewStage
+{
     NONE,
     PREINFUSION,
     BLOOM,
@@ -68,41 +69,47 @@ void updateController(MachineState &state)
     if (state.auto_brew_enabled)
     {
         auto elapsed = millis() - state.auto_brew_start_time;
+        BrewStage previous_stage = brew_stage;
 
         if (elapsed < state.auto_brew_preinfusion_duration)
-        {
             brew_stage = BrewStage::PREINFUSION;
+        else if (elapsed < state.auto_brew_preinfusion_duration + state.auto_brew_bloom_duration)
+            brew_stage = BrewStage::BLOOM;
+        else if (elapsed < state.auto_brew_preinfusion_duration + state.auto_brew_bloom_duration + state.auto_brew_duration)
+            brew_stage = BrewStage::BREWING;
+        else
+            brew_stage = BrewStage::DONE;
+
+        bool stage_changed = (previous_stage != brew_stage);
+
+        switch (brew_stage)
+        {
+        case BrewStage::PREINFUSION:
             state.pump_active = true;
             state.solenoid_active = true;
-        }
-        else if (elapsed < state.auto_brew_preinfusion_duration + state.auto_brew_bloom_duration)
-        {
-            brew_stage = BrewStage::BLOOM;
+            break;
+        case BrewStage::BLOOM:
             state.pump_active = false;
             state.solenoid_active = true;
-        }
-        else if (elapsed < state.auto_brew_preinfusion_duration + state.auto_brew_bloom_duration + state.auto_brew_duration)
-        {
+            break;
+        case BrewStage::BREWING:
             state.pump_active = true;
             state.solenoid_active = true;
-            // Activate feed forward when brew starts
-            // TODO: give more control over power and duration
-            if (brew_stage != BrewStage::BREWING) {
-                // Transitioning into brew stage, start feed forward if not already active
-                if (!state.do_feed_forward) {
-                    state.do_feed_forward = true;
-                    state.feed_forward_start_time = millis();
-                }
-            }
-            brew_stage = BrewStage::BREWING;
 
-        }
-        else
-        {
-            brew_stage = BrewStage::DONE;
+            // If we transitioned into the brewing stage and feed forward isn't already active, start it
+            if (stage_changed && !state.do_feed_forward)
+            {
+                state.do_feed_forward = true;
+                state.feed_forward_start_time = millis();
+            }
+
+            break;
+        case BrewStage::DONE:
+        default:  // Something went wrong, fail safe by turning everything off
             state.auto_brew_enabled = false;
             state.pump_active = false;
             state.solenoid_active = false;
+            break;
         }
     }
 }

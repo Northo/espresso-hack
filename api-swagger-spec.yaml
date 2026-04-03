@@ -1,0 +1,262 @@
+openapi: 3.0.0
+info:
+  title: "ESP32 Machine Control API"
+  description: "API for the PID espresso machine temperature controller"
+  version: "2.0.0"
+
+servers:
+  - url: "http://192.168.68.114"
+    description: "Physical ESP32 Device (IP)"
+  - url: "http://espresso-controller.local"
+    description: "Physical ESP32 Device (mDNS)"
+
+components:
+  schemas:
+    Status:
+      type: object
+      description: "Live, read-only machine state"
+      properties:
+        temperature:
+          type: number
+          format: float
+          description: "Current measured temperature (°C)"
+          example: 92.5
+        heater_power:
+          type: number
+          format: float
+          description: "Current heater duty cycle (0–100)"
+          example: 45.2
+        mode:
+          type: string
+          enum: [PID, MANUAL, BANG_BANG]
+          description: "Active control mode"
+          example: "PID"
+        pump_active:
+          type: boolean
+          description: "Whether the pump is currently running"
+          example: false
+        solenoid_active:
+          type: boolean
+          description: "Whether the solenoid is currently open"
+          example: false
+
+    Config:
+      type: object
+      description: "All tunable configuration parameters"
+      properties:
+        target_temperature:
+          type: number
+          format: float
+          description: "PID setpoint (°C)"
+          example: 93.0
+        kp:
+          type: number
+          format: float
+          example: 1.7294
+        ki:
+          type: number
+          format: float
+          example: 0.014412
+        kd:
+          type: number
+          format: float
+          example: 0.0
+        pid_sample_time:
+          type: integer
+          description: "PID compute interval (ms)"
+          example: 250
+        relay_window_size:
+          type: integer
+          description: "Time-proportional relay window (ms)"
+          example: 1000
+        temperature_ema_alpha:
+          type: number
+          format: float
+          description: "EMA smoothing factor (0–1; 1 = no smoothing)"
+          example: 0.2
+        manual_power:
+          type: number
+          format: float
+          description: "Heater power in MANUAL mode (0–100)"
+          example: 0.0
+        feed_forward_duration:
+          type: integer
+          description: "Feed-forward active duration (ms)"
+          example: 20000
+        feed_forward_power:
+          type: number
+          format: float
+          description: "Heater power during feed-forward (0–100)"
+          example: 60.0
+        feed_forward_factor:
+          type: number
+          format: float
+          description: "Scaling factor applied to feed-forward power"
+          example: 1.0
+        auto_brew_preinfusion_duration:
+          type: integer
+          description: "Pre-infusion phase duration (ms)"
+          example: 2000
+        auto_brew_duration:
+          type: integer
+          description: "Total brew phase duration (ms)"
+          example: 30000
+        auto_brew_bloom_duration:
+          type: integer
+          description: "Bloom (pressure hold) phase duration (ms)"
+          example: 5000
+
+    ModeRequest:
+      type: object
+      required: [mode]
+      properties:
+        mode:
+          type: string
+          enum: [PID, MANUAL, BANG_BANG]
+          description: "Control mode to activate"
+          example: "PID"
+
+    BrewRequest:
+      type: object
+      required: [active]
+      properties:
+        active:
+          type: boolean
+          description: "true to start an auto-brew cycle, false to cancel"
+          example: true
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid JSON"
+
+paths:
+  /api/status:
+    get:
+      summary: "Get live machine status"
+      description: "Returns read-only live state: current temperature, heater output, active mode, and pump/solenoid state."
+      responses:
+        '200':
+          description: "Current machine status"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+
+  /api/config:
+    get:
+      summary: "Get configuration"
+      description: "Returns all tunable parameters."
+      responses:
+        '200':
+          description: "Current configuration"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Config'
+    patch:
+      summary: "Update configuration"
+      description: "Update any subset of tunable parameters. Returns the full updated configuration."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Config'
+            examples:
+              PIDTuning:
+                summary: "Update PID coefficients"
+                value:
+                  kp: 1.7294
+                  ki: 0.014412
+                  kd: 0.0
+              SetEMA:
+                summary: "Adjust EMA smoothing"
+                description: "1 = no smoothing, lower values = more smoothing."
+                value:
+                  temperature_ema_alpha: 0.8
+              SetTarget:
+                summary: "Change target temperature"
+                value:
+                  target_temperature: 93.0
+      responses:
+        '200':
+          description: "Configuration updated — returns full updated config"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Config'
+        '400':
+          description: "Invalid request body"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/mode:
+    post:
+      summary: "Switch control mode"
+      description: "Set the active heater control mode. Returns the updated live status."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModeRequest'
+            examples:
+              SwitchToPID:
+                summary: "Switch to PID mode"
+                value:
+                  mode: "PID"
+              SwitchToManual:
+                summary: "Switch to manual mode"
+                value:
+                  mode: "MANUAL"
+      responses:
+        '200':
+          description: "Mode updated — returns updated live status"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+        '400':
+          description: "Missing or invalid mode value"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/brew:
+    post:
+      summary: "Start or cancel an auto-brew cycle"
+      description: "Activate or deactivate the automatic brew sequence (pre-infusion → bloom → brew). Returns the updated live status."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrewRequest'
+            examples:
+              StartBrew:
+                summary: "Start a brew cycle"
+                value:
+                  active: true
+              CancelBrew:
+                summary: "Cancel a running brew cycle"
+                value:
+                  active: false
+      responses:
+        '200':
+          description: "Brew state updated — returns updated live status"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+        '400':
+          description: "Missing or invalid request body"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

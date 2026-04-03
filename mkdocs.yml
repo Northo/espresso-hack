@@ -7,6 +7,9 @@ theme:
     primary: red
   features:
     - navigation.footer
+plugins:
+  - search
+  - swagger-ui-tag
 markdown_extensions:
   - md_in_html
   - footnotes

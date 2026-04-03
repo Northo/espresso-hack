@@ -21,7 +21,7 @@ constexpr double STEAM_TARGET_TEMPERATURE = 130.0; // °C
 
 constexpr int FEED_FORWARD_BUTTON_PIN = 14;
 constexpr long DEFAULT_FEED_FORWARD_DURATION = 20000; // ms
-constexpr double DEFAULT_FEED_FORWARD_POWER = 60.0;
+constexpr double DEFAULT_FEED_FORWARD_POWER = 70.0;
 constexpr double DEFAULT_FEED_FORWARD_FACTOR = 1.0;
 
 constexpr int PUMP_PIN = 21;

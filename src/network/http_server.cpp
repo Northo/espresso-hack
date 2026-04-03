@@ -76,6 +76,9 @@ static void handleConfig(MachineState& machine_state) {
         if (doc.containsKey("feed_forward_power")) {
             machine_state.feed_forward_power = doc["feed_forward_power"].as<double>();
         }
+        if (doc.containsKey("feed_forward_factor")) {
+            machine_state.feed_forward_factor = doc["feed_forward_factor"].as<double>();
+        }
         
 }
 

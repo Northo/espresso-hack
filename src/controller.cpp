@@ -56,7 +56,7 @@ void updateController(MachineState &state)
     {
         if (millis() - state.feed_forward_start_time < state.feed_forward_duration)
         {
-            state.heater_power = state.heater_power + state.feed_forward_power;
+            state.heater_power = state.heater_power + state.feed_forward_power * state.feed_forward_factor;
             if (state.heater_power > 100)
                 state.heater_power = 100;
         }

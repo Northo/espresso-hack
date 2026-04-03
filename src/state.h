@@ -32,6 +32,7 @@ struct MachineState {
     long feed_forward_start_time = 0;
     long feed_forward_duration = DEFAULT_FEED_FORWARD_DURATION;
     double feed_forward_power = DEFAULT_FEED_FORWARD_POWER;
+    double feed_forward_factor = DEFAULT_FEED_FORWARD_FACTOR;
 
     // Auto brew mode
     bool auto_brew_enabled = false;

@@ -1,8 +1,8 @@
 #pragma once
 
 constexpr double DEFAULT_TARGET_TEMPERATURE = 93.0; // °C
-constexpr double DEFAULT_KP = 3.4588;
-constexpr double DEFAULT_KI = 0.057647;
+constexpr double DEFAULT_KP = 1.7294;
+constexpr double DEFAULT_KI = 0.014412;
 constexpr double DEFAULT_KD = 0.0;
 
 constexpr int SSR_PIN = 43;

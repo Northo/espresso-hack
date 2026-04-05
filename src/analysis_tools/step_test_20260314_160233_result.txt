@@ -1,0 +1,17 @@
+PID control restored.
+Data saved to step_test_20260314_160233.csv
+
+=== Step response results ===
+  Δoutput:    11.7%
+  Ramp rate:  6.7653 °C/min  (0.11276 °C/s)
+  Process gain R = 0.009637 °C/s per 1% output
+
+=== Lambda PI tuning (PI, P_ON_M) ===
+     λ (s)          Kp            Ki
+  --------  ----------  ------------
+        30      3.4588      0.057647
+        60      1.7294      0.014412
+       120      0.8647      0.003603
+
+  Paste chosen values into config.h as DEFAULT_KP / DEFAULT_KI
+  (DEFAULT_KD = 0.0, DEFAULT_P_ON_M = true)

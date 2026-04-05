@@ -12,6 +12,7 @@ constexpr int THERMO_CS_PIN = 10;
 constexpr int THERMO_SO_PIN = 13;
 
 constexpr int THERMOCUPLE_READ_INTERVAL = 100; // ms
+constexpr float DEFAULT_TEMPERATURE_EMA_ALPHA = 1.0;
 
 constexpr const char *WIFI_HOSTNAME = "espresso-controller";
 constexpr int OTA_PORT = 3232;

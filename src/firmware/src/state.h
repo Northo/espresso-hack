@@ -47,7 +47,7 @@ struct MachineState {
     int relay_window_size = 1000; // ms for time-proportional control
 
     // Temperature input
-    float temperature_ema_alpha = 0.2;
+    float temperature_ema_alpha = DEFAULT_TEMPERATURE_EMA_ALPHA;
 
     // Manual mode
     double manual_power = 0.0;

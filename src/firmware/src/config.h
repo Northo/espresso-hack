@@ -17,7 +17,7 @@ constexpr float DEFAULT_TEMPERATURE_EMA_ALPHA = 1.0;
 constexpr const char *WIFI_HOSTNAME = "espresso-controller";
 constexpr int OTA_PORT = 3232;
 
-constexpr int STEAM_BUTTON_PIN = 44;
+constexpr int STEAM_BUTTON_PIN = 18;
 constexpr double STEAM_TARGET_TEMPERATURE = 130.0; // °C
 
 constexpr int FEED_FORWARD_BUTTON_PIN = 14;

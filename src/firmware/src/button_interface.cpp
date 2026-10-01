@@ -9,6 +9,7 @@ Button autoBrewButton(AUTO_BREW_BUTTON_PIN);
 void setupButtons(MachineState& state) {
     steamButton.begin();
     if (steamButton.read() == Button::PRESSED) {
+        Serial.println("Starting in steam mode");
         state.mode = ControlMode::BANG_BANG;
         state.target_temperature = STEAM_TARGET_TEMPERATURE;
     }

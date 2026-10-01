@@ -13,7 +13,13 @@
 
 MachineState machine_state;
 
+constexpr int LCD_ON_BATTERY_PIN = 15;
+
 void setup() {
+    // Turn on display when using external power.
+    pinMode(LCD_ON_BATTERY_PIN, OUTPUT);
+    digitalWrite(LCD_ON_BATTERY_PIN, HIGH);
+    
     Serial.begin(115200);
     ESP_LOGI("Main", "Starting up...");
     initDisplay();

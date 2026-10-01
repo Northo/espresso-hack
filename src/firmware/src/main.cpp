@@ -8,7 +8,7 @@
 #include "display.h"
 #include "network/wifi.h"
 #include "network/ota.h"
-#include "network/http_server.h"
+#include "network/display_link.h"
 #include "button_interface.h"
 
 MachineState machine_state;
@@ -29,7 +29,7 @@ void setup() {
     
     setupWiFi();
     setupOTA(machine_state);
-    initHTTPServer(machine_state);
+    initDisplayLink(machine_state);
     setupButtons(machine_state);  // Must happen after controller setup
 }
 
@@ -45,6 +45,6 @@ void loop() {
     handleButtons(machine_state);
 
     updateDisplay(machine_state);
+    handleDisplayLink(machine_state);
     handleOTA();
-    handleHTTPServer();
 }

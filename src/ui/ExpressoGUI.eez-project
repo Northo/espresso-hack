@@ -152,6 +152,34 @@
         "type": "string",
         "defaultValue": "\"--\"",
         "native": true
+      },
+      {
+        "objID": "629b32c1-9260-4b63-9998-2d5dce8a3f35",
+        "name": "steam_active",
+        "type": "boolean",
+        "defaultValue": "false",
+        "native": true
+      },
+      {
+        "objID": "0fc93fcf-b5a1-43c4-b9b6-bd86e214d322",
+        "name": "brewing",
+        "type": "boolean",
+        "defaultValue": "false",
+        "native": true
+      },
+      {
+        "objID": "60a71a9a-3ea1-4400-a4b4-3945ef7a9c8d",
+        "name": "brew_button_text",
+        "type": "string",
+        "defaultValue": "\"BREW\"",
+        "native": true
+      },
+      {
+        "objID": "9a0eec2e-6ce2-4b3d-bb1a-54f9d82d649c",
+        "name": "brew_status_text",
+        "type": "string",
+        "defaultValue": "\"\"",
+        "native": true
       }
     ],
     "structures": [],
@@ -462,6 +490,50 @@
               "useStaticText": true
             },
             {
+              "objID": "8351a6a0-c428-4432-b036-f06ca9ca23a0",
+              "type": "LVGLLabelWidget",
+              "left": 120,
+              "top": 230,
+              "width": 240,
+              "height": 30,
+              "customInputs": [],
+              "customOutputs": [],
+              "style": {
+                "objID": "e8f9b487-77ed-4fb1-b2ed-012a4840e3f4",
+                "useStyle": "default",
+                "conditionalStyles": [],
+                "childStyles": []
+              },
+              "timeline": [],
+              "eventHandlers": [],
+              "leftUnit": "px",
+              "topUnit": "px",
+              "widthUnit": "px",
+              "heightUnit": "px",
+              "children": [],
+              "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLLABLE|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_WITH_ARROW|SNAPPABLE",
+              "hiddenFlagType": "literal",
+              "clickableFlagType": "literal",
+              "flagScrollbarMode": "",
+              "flagScrollDirection": "",
+              "scrollSnapX": "",
+              "scrollSnapY": "",
+              "checkedStateType": "literal",
+              "disabledStateType": "literal",
+              "states": "",
+              "useStyle": "lbl_small",
+              "localStyles": {
+                "objID": "36cd0a5b-ed62-4256-9b0e-39474caba615"
+              },
+              "group": "",
+              "groupIndex": 0,
+              "text": "brew_status_text",
+              "textType": "expression",
+              "longMode": "WRAP",
+              "recolor": false,
+              "useStaticText": true
+            },
+            {
               "objID": "6e4af38f-074f-4e80-b6a5-914a367c8a68",
               "type": "LVGLButtonWidget",
               "left": 80,
@@ -535,8 +607,8 @@
                   },
                   "group": "",
                   "groupIndex": 0,
-                  "text": "BREW",
-                  "textType": "literal",
+                  "text": "brew_button_text",
+                  "textType": "expression",
                   "longMode": "WRAP",
                   "recolor": false,
                   "useStaticText": true
@@ -550,7 +622,7 @@
               "flagScrollDirection": "",
               "scrollSnapX": "",
               "scrollSnapY": "",
-              "checkedStateType": "literal",
+              "checkedStateType": "expression",
               "disabledStateType": "literal",
               "states": "",
               "useStyle": "btn_brew",
@@ -558,7 +630,8 @@
                 "objID": "9a677176-b802-4ca6-ece7-45cc3391c645"
               },
               "group": "",
-              "groupIndex": 0
+              "groupIndex": 0,
+              "checkedState": "brewing"
             },
             {
               "objID": "6e12a9b0-fb26-4d51-cb1d-82f6b8186561",
@@ -649,7 +722,7 @@
               "flagScrollDirection": "",
               "scrollSnapX": "",
               "scrollSnapY": "",
-              "checkedStateType": "literal",
+              "checkedStateType": "expression",
               "disabledStateType": "literal",
               "states": "",
               "useStyle": "btn_steam",
@@ -657,7 +730,8 @@
                 "objID": "7d188c49-2c18-4926-c466-127c52ec4e08"
               },
               "group": "",
-              "groupIndex": 0
+              "groupIndex": 0,
+              "checkedState": "steam_active"
             },
             {
               "objID": "b612006d-5786-43e8-8e4f-1d0e933b65b4",
@@ -1557,6 +1631,10 @@
                 "bg_opa": 255,
                 "radius": 32,
                 "text_color": "bg"
+              },
+              "CHECKED": {
+                "border_width": 4,
+                "border_color": "text"
               }
             }
           }
@@ -1576,6 +1654,10 @@
                 "bg_opa": 255,
                 "radius": 32,
                 "text_color": "bg"
+              },
+              "CHECKED": {
+                "border_width": 4,
+                "border_color": "text"
               }
             }
           }

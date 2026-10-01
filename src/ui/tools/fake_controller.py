@@ -76,6 +76,7 @@ class FakeMachine:
         self.brew_duration = 25
         self.steam = False
         self.brew_until = 0.0
+        self.brew_start = 0.0
 
     def target(self):
         return STEAM_TEMP if self.steam else self.setpoint
@@ -89,8 +90,12 @@ class FakeMachine:
     def state_payload(self) -> bytes:
         brewing = time.time() < self.brew_until
         flags = (FLAG_BREWING if brewing else 0) | (FLAG_STEAM if self.steam else 0)
-        return struct.pack("<BhhHB", MSG_STATE, round(self.temp * 10), round(self.target() * 10),
-                           self.brew_duration, flags)
+        elapsed = max(0.0, time.time() - self.brew_start) if brewing else 0.0
+        stage = 0
+        if brewing:
+            stage = 1 if elapsed < 2 else 2 if elapsed < 7 else 3
+        return struct.pack("<BhhHBHB", MSG_STATE, round(self.temp * 10), round(self.target() * 10),
+                           self.brew_duration, flags, int(elapsed), stage)
 
     def handle(self, payload: bytes):
         if len(payload) != 4 or payload[0] != MSG_COMMAND:
@@ -99,7 +104,11 @@ class FakeMachine:
         _, cmd, value = struct.unpack("<BBh", payload)
         print(f"<- {CMD_NAMES.get(cmd, cmd)} value={value}")
         if cmd == CMD_BREW_START:
-            self.brew_until = time.time() + self.brew_duration
+            if time.time() < self.brew_until:
+                self.brew_until = 0.0  # cancel, like the real controller
+            else:
+                self.brew_start = time.time()
+                self.brew_until = self.brew_start + 7 + self.brew_duration
         elif cmd == CMD_STEAM_TOGGLE:
             self.steam = not self.steam
         elif cmd == CMD_SET_SETPOINT:

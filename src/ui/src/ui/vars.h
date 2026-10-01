@@ -30,6 +30,14 @@ extern const char *get_var_setpoint_text();
 extern void set_var_setpoint_text(const char *value);
 extern const char *get_var_brew_seconds_text();
 extern void set_var_brew_seconds_text(const char *value);
+extern bool get_var_steam_active();
+extern void set_var_steam_active(bool value);
+extern bool get_var_brewing();
+extern void set_var_brewing(bool value);
+extern const char *get_var_brew_button_text();
+extern void set_var_brew_button_text(const char *value);
+extern const char *get_var_brew_status_text();
+extern void set_var_brew_status_text(const char *value);
 
 #ifdef __cplusplus
 }

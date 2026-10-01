@@ -26,8 +26,15 @@ QueueHandle_t g_queue;
 const uint8_t kPeer[6] = {LINK_PEER_MAC};
 
 // Runs in the WiFi task: only queue, handle in poll().
+#ifdef LINK_DEBUG
+volatile uint32_t g_rx_count, g_rx_bad;
+#endif
+
 void onRecv(const uint8_t *mac, const uint8_t *data, int len)
 {
+#ifdef LINK_DEBUG
+    g_rx_count++;
+#endif
     if (len <= 0 || len > (int)proto::MAX_PAYLOAD) return;
     Packet p;
     p.len = len;
@@ -50,11 +57,28 @@ public:
         memcpy(peer.peer_addr, kPeer, 6);
         peer.channel = 0; // current channel
         peer.encrypt = false;
-        return esp_now_add_peer(&peer) == ESP_OK;
+        bool ok = esp_now_add_peer(&peer) == ESP_OK;
+#ifdef LINK_DEBUG
+        Serial.printf("[link] init ok=%d mac=%s channel=%d\n", ok, WiFi.macAddress().c_str(), WiFi.channel());
+        int n = WiFi.scanNetworks();
+        for (int i = 0; i < n; i++)
+            Serial.printf("[link] AP '%s' ch %d rssi %d\n", WiFi.SSID(i).c_str(), WiFi.channel(i), WiFi.RSSI(i));
+        esp_wifi_set_channel(LINK_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE); // scan may have moved it
+#endif
+        return ok;
     }
 
     void poll() override
     {
+#ifdef LINK_DEBUG
+        static uint32_t last = 0;
+        if (millis() - last > 2000) {
+            last = millis();
+            uint8_t ch; wifi_second_chan_t sc;
+            esp_wifi_get_channel(&ch, &sc);
+            Serial.printf("[link] channel=%u rx=%u\n", ch, (unsigned)g_rx_count);
+        }
+#endif
         Packet p;
         while (xQueueReceive(g_queue, &p, 0) == pdTRUE) {
             if (rx_) rx_(p.data, p.len);

@@ -11,6 +11,10 @@ static char s_temperature_buf[16] = "--", s_setpoint_buf[16] = "--", s_brew_seco
 static const char *s_temperature_text = s_temperature_buf, *s_setpoint_text = s_setpoint_buf,
                   *s_brew_seconds_text = s_brew_seconds_buf;
 
+static bool s_steam_active, s_brewing;
+static char s_brew_button_buf[8] = "BREW", s_brew_status_buf[32] = "";
+static const char *s_brew_button_text = s_brew_button_buf, *s_brew_status_text = s_brew_status_buf;
+
 static constexpr int32_t SETPOINT_MIN = 20, SETPOINT_MAX = 160; // matches the arc range
 static constexpr int32_t BREW_MIN = 1, BREW_MAX = 120;
 
@@ -30,7 +34,23 @@ void app_on_controller_state(const proto::StateMsg &st)
     s_setpoint = round_x10(st.setpoint_x10);
     s_brew_seconds = st.brew_duration_s;
     refresh_texts();
-    // TODO: st.flags (FLAG_BREWING / FLAG_STEAM) once the UI has bindings for them.
+
+    s_steam_active = st.flags & proto::FLAG_STEAM;
+    s_brewing = st.flags & proto::FLAG_BREWING;
+    // The BREW button doubles as a cancel button while brewing.
+    snprintf(s_brew_button_buf, sizeof(s_brew_button_buf), "%s", s_brewing ? "STOP" : "BREW");
+
+    const char *stage = nullptr;
+    switch (st.brew_stage) {
+    case proto::STAGE_PREINFUSION: stage = "PREINFUSE"; break;
+    case proto::STAGE_BLOOM: stage = "BLOOM"; break;
+    case proto::STAGE_BREWING: stage = "BREW"; break;
+    }
+    if (s_brewing && stage) {
+        snprintf(s_brew_status_buf, sizeof(s_brew_status_buf), "%s %us", stage, (unsigned)st.brew_elapsed_s);
+    } else {
+        s_brew_status_buf[0] = '\0';
+    }
 }
 
 static void change_setpoint(int32_t delta)
@@ -59,6 +79,15 @@ int32_t get_var_setpoint() { return s_setpoint; }
 void set_var_setpoint(int32_t v) { s_setpoint = v; }
 int32_t get_var_brew_seconds() { return s_brew_seconds; }
 void set_var_brew_seconds(int32_t v) { s_brew_seconds = v; }
+
+bool get_var_steam_active() { return s_steam_active; }
+void set_var_steam_active(bool v) { s_steam_active = v; }
+bool get_var_brewing() { return s_brewing; }
+void set_var_brewing(bool v) { s_brewing = v; }
+const char *get_var_brew_button_text() { return s_brew_button_text; }
+void set_var_brew_button_text(const char *v) { s_brew_button_text = v; }
+const char *get_var_brew_status_text() { return s_brew_status_text; }
+void set_var_brew_status_text(const char *v) { s_brew_status_text = v; }
 
 const char *get_var_temperature_text() { return s_temperature_text; }
 void set_var_temperature_text(const char *v) { s_temperature_text = v; }

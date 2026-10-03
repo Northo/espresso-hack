@@ -6,7 +6,8 @@
 #include "transport.h"
 #include "protocol.h"
 
-// Must match the WiFi channel the controller is on (it joins your AP, so it uses the AP's channel).
+// Only used with -DLINK_NO_OTA. Otherwise the display joins the router (for OTA), which puts ESP-NOW
+// on the router's channel automatically, same as the controller.
 #ifndef LINK_ESPNOW_CHANNEL
 #define LINK_ESPNOW_CHANNEL 1
 #endif
@@ -48,8 +49,11 @@ public:
     {
         g_queue = xQueueCreate(8, sizeof(Packet));
         WiFi.mode(WIFI_STA);
+#ifdef LINK_NO_OTA
+        // Not joining the router: pin the channel to the one the controller is on.
         WiFi.disconnect();
         esp_wifi_set_channel(LINK_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE);
+#endif
         if (esp_now_init() != ESP_OK) return false;
         esp_now_register_recv_cb(onRecv);
 
@@ -63,7 +67,9 @@ public:
         int n = WiFi.scanNetworks();
         for (int i = 0; i < n; i++)
             Serial.printf("[link] AP '%s' ch %d rssi %d\n", WiFi.SSID(i).c_str(), WiFi.channel(i), WiFi.RSSI(i));
+#ifdef LINK_NO_OTA
         esp_wifi_set_channel(LINK_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE); // scan may have moved it
+#endif
 #endif
         return ok;
     }

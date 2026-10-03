@@ -2,6 +2,9 @@
 #include <LilyGo_RGBPanel.h>
 #include <LV_Helper.h>
 #include "link/controller_link.h"
+#ifndef LINK_NO_OTA
+#include "net_ota.h"
+#endif
 
 // EEZ Studio generated UI lives in src/ui/ (EEZ build output, do not edit).
 #if __has_include("ui/ui.h")
@@ -28,6 +31,10 @@ void setup()
 
     controller_link_begin();  // ESP-NOW (or serial with -DLINK_USE_SERIAL)
 
+#ifndef LINK_NO_OTA
+    ota_begin(); // after ESP-NOW init; joins WiFi in the background
+#endif
+
     beginLvglHelper(panel);   // LVGL display + touch drivers
 
 #ifdef HAS_EEZ_UI
@@ -40,6 +47,9 @@ void setup()
 void loop()
 {
     controller_link_poll();
+#ifndef LINK_NO_OTA
+    ota_poll();
+#endif
     lv_timer_handler();
 #ifdef HAS_EEZ_UI
     ui_tick();

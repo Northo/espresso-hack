@@ -1334,7 +1334,7 @@
               "widthUnit": "px",
               "heightUnit": "px",
               "children": [],
-              "widgetFlags": "PRESS_LOCK",
+              "widgetFlags": "ADV_HITTEST|PRESS_LOCK",
               "hiddenFlagType": "literal",
               "clickableFlag": true,
               "clickableFlagType": "literal",

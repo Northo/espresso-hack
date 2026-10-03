@@ -344,6 +344,7 @@ void create_screen_main() {
             lv_arc_set_bg_start_angle(obj, 200);
             lv_arc_set_bg_end_angle(obj, 340);
             lv_obj_add_event_cb(obj, event_handler_cb_main_setpoint_touch, LV_EVENT_ALL, 0);
+            lv_obj_add_flag(obj, LV_OBJ_FLAG_ADV_HITTEST);
             lv_obj_remove_flag(obj, LV_OBJ_FLAG_CLICK_FOCUSABLE|LV_OBJ_FLAG_GESTURE_BUBBLE|LV_OBJ_FLAG_SCROLL_ELASTIC|LV_OBJ_FLAG_SCROLL_MOMENTUM|LV_OBJ_FLAG_SCROLL_WITH_ARROW|LV_OBJ_FLAG_SNAPPABLE);
             add_style_arc_touch(obj);
         }

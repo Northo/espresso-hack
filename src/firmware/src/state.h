@@ -24,6 +24,7 @@ struct MachineState {
     ControlMode mode = ControlMode::PID;
 
     double target_temperature = DEFAULT_TARGET_TEMPERATURE;
+    double normal_setpoint = DEFAULT_TARGET_TEMPERATURE; // brew setpoint, restored when leaving steam
     double current_temperature = 0.0;
     double kp = DEFAULT_KP;
     double ki = DEFAULT_KI;
@@ -69,3 +70,18 @@ struct MachineState {
     // Actual output to SSR, updated by controller
     double heater_power = 0.0;
 };
+
+// Steam mode switching, shared by the physical steam switch and the display's steam toggle.
+// The brew setpoint is remembered on entry and restored on exit.
+inline void enterSteamMode(MachineState &state) {
+    if (state.mode == ControlMode::BANG_BANG) return; // already in steam: don't overwrite the saved setpoint
+    state.normal_setpoint = state.target_temperature;
+    state.mode = ControlMode::BANG_BANG;
+    state.target_temperature = STEAM_TARGET_TEMPERATURE;
+}
+
+inline void exitSteamMode(MachineState &state) {
+    if (state.mode != ControlMode::BANG_BANG) return;
+    state.mode = ControlMode::PID;
+    state.target_temperature = state.normal_setpoint;
+}

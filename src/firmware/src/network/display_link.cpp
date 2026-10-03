@@ -22,7 +22,6 @@ struct Packet {
 };
 
 static QueueHandle_t rx_queue;
-static double normal_setpoint = DEFAULT_TARGET_TEMPERATURE; // restored when leaving steam
 
 // Runs in the WiFi task: just queue, handle in handleDisplayLink().
 static void onRecv(const uint8_t *mac, const uint8_t *data, int len) {
@@ -92,12 +91,9 @@ static void applyCommand(MachineState &state, const proto::CommandMsg &cmd) {
 
     case proto::CMD_STEAM_TOGGLE:
         if (!steam) {
-            normal_setpoint = state.target_temperature;
-            state.mode = ControlMode::BANG_BANG;
-            state.target_temperature = STEAM_TARGET_TEMPERATURE;
+            enterSteamMode(state);
         } else {
-            state.mode = ControlMode::PID;
-            state.target_temperature = normal_setpoint;
+            exitSteamMode(state);
         }
         break;
 

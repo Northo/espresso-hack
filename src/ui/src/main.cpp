@@ -10,6 +10,7 @@
 #if __has_include("ui/ui.h")
 #include "ui/ui.h"
 #define HAS_EEZ_UI 1
+extern "C" void app_chart_tick(); // ui_bindings.cpp: temperature history chart sampling
 #endif
 
 LilyGo_RGBPanel panel;
@@ -53,6 +54,7 @@ void loop()
     lv_timer_handler();
 #ifdef HAS_EEZ_UI
     ui_tick();
+    app_chart_tick();
 #endif
     delay(2);
 }

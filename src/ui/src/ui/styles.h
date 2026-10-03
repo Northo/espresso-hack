@@ -74,6 +74,13 @@ lv_style_t *get_style_btn_hold_MAIN_CHECKED();
 void add_style_btn_hold(lv_obj_t *obj);
 void remove_style_btn_hold(lv_obj_t *obj);
 
+// Style: chart_flat
+lv_style_t *get_style_chart_flat_MAIN_DEFAULT();
+lv_style_t *get_style_chart_flat_ITEMS_DEFAULT();
+lv_style_t *get_style_chart_flat_INDICATOR_DEFAULT();
+void add_style_chart_flat(lv_obj_t *obj);
+void remove_style_chart_flat(lv_obj_t *obj);
+
 #ifdef __cplusplus
 }
 #endif

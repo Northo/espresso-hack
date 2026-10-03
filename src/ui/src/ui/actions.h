@@ -20,6 +20,7 @@ extern void action_open_clean(lv_event_t * e);
 extern void action_clean_primary(lv_event_t * e);
 extern void action_clean_secondary(lv_event_t * e);
 extern void action_clean_gesture(lv_event_t * e);
+extern void action_chart_gesture(lv_event_t * e);
 
 #ifdef __cplusplus
 }

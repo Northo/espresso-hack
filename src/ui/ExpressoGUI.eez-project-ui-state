@@ -1,7 +1,11 @@
 {
   "navigation": {
     "selectedUserPageObject": "[ExpressoGUI.eez-project]:/userPages/0",
-    "subnavigationSelectedItems": {}
+    "selectedGlobalVariableObject": "[ExpressoGUI.eez-project]:/variables/globalVariables/3",
+    "selectedStyleObject": "[ExpressoGUI.eez-project]:/lvglStyles/styles/2",
+    "subnavigationSelectedItems": {
+      "variables-tab/sub-navigation/selected-item": "Global"
+    }
   },
   "layoutModel": {
     "rootEditor": {
@@ -74,7 +78,7 @@
             {
               "type": "tabset",
               "id": "#05a0a87e-4348-4f1a-819a-3e0a80ab630c",
-              "weight": 15,
+              "weight": 15.000362809597524,
               "enableTabStrip": false,
               "children": [
                 {
@@ -109,12 +113,13 @@
                   "enableClose": false,
                   "icon": "material:folder_open"
                 }
-              ]
+              ],
+              "active": true
             },
             {
               "type": "tabset",
               "id": "EDITORS",
-              "weight": 65,
+              "weight": 47.4609375,
               "enableDeleteWhenEmpty": false,
               "enableClose": false,
               "children": [
@@ -129,13 +134,12 @@
                   },
                   "icon": "svg:page"
                 }
-              ],
-              "active": true
+              ]
             },
             {
               "type": "row",
               "id": "#9fd4423a-c4ea-452c-9213-d3354b1e237f",
-              "weight": 20,
+              "weight": 37.538699690402474,
               "children": [
                 {
                   "type": "tabset",
@@ -773,7 +777,8 @@
                       "component": "styles",
                       "enableClose": false
                     }
-                  ]
+                  ],
+                  "active": true
                 },
                 {
                   "type": "tabset",
@@ -990,11 +995,12 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
+          "0": {
+            "$selected": true
+          },
           "5": {},
           "6": {},
-          "7": {
-            "$selected": true
-          }
+          "7": {}
         }
       },
       "transform": {
@@ -1013,7 +1019,88 @@
     },
     "[ExpressoGUI.eez-project]:/userPages/1[flow-state]": {
       "selectionFront": {},
-      "selectionBack": {},
+      "selectionBack": {
+        "0": {
+          "2": {
+            "$selected": true
+          }
+        }
+      },
+      "transform": {
+        "translate": {
+          "x": -240,
+          "y": -240
+        },
+        "scale": 1
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[ExpressoGUI.eez-project]:/userPages/2[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {},
+        "$selected": true
+      },
+      "transform": {
+        "translate": {
+          "x": -240,
+          "y": -240
+        },
+        "scale": 1
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[ExpressoGUI.eez-project]:/userPages/3[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {
+          "0": {},
+          "2": {},
+          "3": {},
+          "4": {},
+          "5": {},
+          "6": {
+            "0": {}
+          }
+        }
+      },
+      "transform": {
+        "translate": {
+          "x": -256,
+          "y": -243
+        },
+        "scale": 1
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[ExpressoGUI.eez-project]:/lvglStyles/styles[tree-state]": {
+      "1": {
+        "$selected": true
+      },
+      "2": {
+        "$selected": true
+      }
+    },
+    "[ExpressoGUI.eez-project]:/userPages/4[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {}
+      },
       "transform": {
         "translate": {
           "x": -240,

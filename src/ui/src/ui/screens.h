@@ -30,6 +30,7 @@ typedef struct _objects_t {
     lv_obj_t *obj0;
     lv_obj_t *obj1;
     lv_obj_t *obj2;
+    lv_obj_t *temp_ticks;
     lv_obj_t *obj3;
     lv_obj_t *obj4;
     lv_obj_t *obj5;
@@ -57,6 +58,10 @@ typedef struct _objects_t {
 extern objects_t objects;
 
 typedef struct {
+    lv_scale_section_t *brew;
+} screen_main_state_t;
+
+typedef struct {
     lv_scale_section_t *temp;
 } screen_main_1_state_t;
 
@@ -65,6 +70,7 @@ typedef struct {
     lv_chart_series_t *setpoint;
 } screen_chart_state_t;
 
+extern screen_main_state_t screen_main_state;
 extern screen_main_1_state_t screen_main_1_state;
 extern screen_chart_state_t screen_chart_state;
 
@@ -107,6 +113,9 @@ extern uint32_t active_theme_index;
 
 // Global state variables
 
+extern lv_style_t temp_ticks_brew_main_style;
+extern lv_style_t temp_ticks_brew_items_style;
+extern lv_style_t temp_ticks_brew_indicator_style;
 extern lv_style_t Setpoint_temp_main_style;
 extern lv_style_t Setpoint_temp_items_style;
 extern lv_style_t Setpoint_temp_indicator_style;

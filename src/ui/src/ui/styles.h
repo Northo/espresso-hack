@@ -86,6 +86,11 @@ lv_style_t *get_style_arc_start_cap_MAIN_DEFAULT();
 void add_style_arc_start_cap(lv_obj_t *obj);
 void remove_style_arc_start_cap(lv_obj_t *obj);
 
+// Style: lbl_range
+lv_style_t *get_style_lbl_range_MAIN_DEFAULT();
+void add_style_lbl_range(lv_obj_t *obj);
+void remove_style_lbl_range(lv_obj_t *obj);
+
 #ifdef __cplusplus
 }
 #endif

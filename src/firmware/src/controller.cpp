@@ -66,6 +66,9 @@ void updateController(MachineState &state)
         }
     }
 
+    if (!state.auto_brew_enabled)
+        state.brew_hold = false;
+
     if (state.auto_brew_enabled)
     {
         auto elapsed = millis() - state.auto_brew_start_time;
@@ -77,6 +80,8 @@ void updateController(MachineState &state)
             brew_stage = BrewStage::BLOOM;
         else if (elapsed < state.auto_brew_preinfusion_duration + state.auto_brew_bloom_duration + state.auto_brew_duration)
             brew_stage = BrewStage::BREWING;
+        else if (state.brew_hold && elapsed < state.auto_brew_preinfusion_duration + state.auto_brew_bloom_duration + state.auto_brew_duration + MAX_BREW_HOLD_EXTRA)
+            brew_stage = BrewStage::BREWING; // hold: keep going until stopped (or the failsafe limit)
         else
             brew_stage = BrewStage::DONE;
 

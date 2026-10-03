@@ -36,6 +36,7 @@ struct MachineState {
 
     // Auto brew mode
     bool auto_brew_enabled = false;
+    bool brew_hold = false; // keep brewing past auto_brew_duration (until stopped or hold released)
     long auto_brew_start_time = 0;
     bool pump_active = false;
     bool solenoid_active = false;

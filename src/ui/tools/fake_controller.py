@@ -19,9 +19,9 @@ import serial
 
 START = 0x7E
 MSG_STATE, MSG_COMMAND = 1, 2
-FLAG_BREWING, FLAG_STEAM = 1, 2
-CMD_BREW_START, CMD_STEAM_TOGGLE, CMD_SET_SETPOINT, CMD_SET_BREW_DURATION = 1, 2, 3, 4
-CMD_NAMES = {1: "BREW_START", 2: "STEAM_TOGGLE", 3: "SET_SETPOINT", 4: "SET_BREW_DURATION"}
+FLAG_BREWING, FLAG_STEAM, FLAG_HOLD = 1, 2, 4
+CMD_BREW_START, CMD_STEAM_TOGGLE, CMD_SET_SETPOINT, CMD_SET_BREW_DURATION, CMD_BREW_STOP, CMD_BREW_HOLD_TOGGLE = 1, 2, 3, 4, 5, 6
+CMD_NAMES = {1: "BREW_START", 2: "STEAM_TOGGLE", 3: "SET_SETPOINT", 4: "SET_BREW_DURATION", 5: "BREW_STOP", 6: "BREW_HOLD_TOGGLE"}
 STEAM_TEMP = 130.0
 
 
@@ -77,6 +77,7 @@ class FakeMachine:
         self.steam = False
         self.brew_until = 0.0
         self.brew_start = 0.0
+        self.hold = False
 
     def target(self):
         return STEAM_TEMP if self.steam else self.setpoint
@@ -88,8 +89,11 @@ class FakeMachine:
             self.temp -= 0.2 * dt
 
     def state_payload(self) -> bytes:
-        brewing = time.time() < self.brew_until
-        flags = (FLAG_BREWING if brewing else 0) | (FLAG_STEAM if self.steam else 0)
+        brewing = time.time() < self.brew_until or (self.hold and self.brew_until > 0)
+        if not brewing:
+            self.hold = False
+            self.brew_until = 0.0
+        flags = (FLAG_BREWING if brewing else 0) | (FLAG_STEAM if self.steam else 0) | (FLAG_HOLD if self.hold else 0)
         elapsed = max(0.0, time.time() - self.brew_start) if brewing else 0.0
         stage = 0
         if brewing:
@@ -104,11 +108,15 @@ class FakeMachine:
         _, cmd, value = struct.unpack("<BBh", payload)
         print(f"<- {CMD_NAMES.get(cmd, cmd)} value={value}")
         if cmd == CMD_BREW_START:
-            if time.time() < self.brew_until:
-                self.brew_until = 0.0  # cancel, like the real controller
-            else:
+            if self.brew_until <= 0:
                 self.brew_start = time.time()
                 self.brew_until = self.brew_start + 7 + self.brew_duration
+        elif cmd == CMD_BREW_STOP:
+            self.brew_until = 0.0
+            self.hold = False
+        elif cmd == CMD_BREW_HOLD_TOGGLE:
+            if self.brew_until > 0:
+                self.hold = not self.hold
         elif cmd == CMD_STEAM_TOGGLE:
             self.steam = not self.steam
         elif cmd == CMD_SET_SETPOINT:

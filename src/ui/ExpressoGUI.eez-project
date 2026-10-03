@@ -180,6 +180,20 @@
         "type": "string",
         "defaultValue": "\"\"",
         "native": true
+      },
+      {
+        "objID": "fbcd784a-bd8a-45b7-880e-1b6373b4254e",
+        "name": "brew_hold",
+        "type": "boolean",
+        "defaultValue": "false",
+        "native": true
+      },
+      {
+        "objID": "22438f81-2717-4336-9fd8-7284446648d1",
+        "name": "brew_idle",
+        "type": "boolean",
+        "defaultValue": "false",
+        "native": true
       }
     ],
     "structures": [],
@@ -273,6 +287,18 @@
     {
       "objID": "62344b7c-5872-4a8d-8f38-bd67aeb62153",
       "name": "settings_gesture",
+      "components": [],
+      "connectionLines": [],
+      "localVariables": [],
+      "userProperties": [],
+      "implementationType": "native",
+      "usedIn": [
+        "Default"
+      ]
+    },
+    {
+      "objID": "3c30ead0-32c1-454c-ab16-10dfa3c8d948",
+      "name": "brew_hold_toggle",
       "components": [],
       "connectionLines": [],
       "localVariables": [],
@@ -715,7 +741,7 @@
                 }
               ],
               "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_ON_FOCUS|SCROLL_WITH_ARROW|SNAPPABLE",
-              "hiddenFlagType": "literal",
+              "hiddenFlagType": "expression",
               "clickableFlag": true,
               "clickableFlagType": "literal",
               "flagScrollbarMode": "",
@@ -731,7 +757,109 @@
               },
               "group": "",
               "groupIndex": 0,
+              "hiddenFlag": "brewing",
               "checkedState": "steam_active"
+            },
+            {
+              "objID": "4cec637a-819e-4f21-91a0-2e887e71f193",
+              "type": "LVGLButtonWidget",
+              "left": 260,
+              "top": 320,
+              "width": 140,
+              "height": 64,
+              "customInputs": [],
+              "customOutputs": [],
+              "style": {
+                "objID": "7c6f22c8-b7e8-497f-adef-0567cd2cae4a",
+                "useStyle": "default",
+                "conditionalStyles": [],
+                "childStyles": []
+              },
+              "timeline": [],
+              "eventHandlers": [
+                {
+                  "objID": "9e3500e7-9ca7-4399-91eb-b95d6ae0e388",
+                  "eventName": "CLICKED",
+                  "handlerType": "action",
+                  "action": "brew_hold_toggle",
+                  "userData": 0
+                }
+              ],
+              "leftUnit": "px",
+              "topUnit": "px",
+              "widthUnit": "px",
+              "heightUnit": "px",
+              "children": [
+                {
+                  "objID": "589374de-fcbe-45c8-a4be-8c3aa79a4ea1",
+                  "type": "LVGLLabelWidget",
+                  "left": 0,
+                  "top": 0,
+                  "width": 49,
+                  "height": 16,
+                  "customInputs": [],
+                  "customOutputs": [],
+                  "style": {
+                    "objID": "1d6745d3-a445-4298-b9bd-1c7eb7652176",
+                    "useStyle": "default",
+                    "conditionalStyles": [],
+                    "childStyles": []
+                  },
+                  "timeline": [],
+                  "eventHandlers": [],
+                  "leftUnit": "px",
+                  "topUnit": "px",
+                  "widthUnit": "content",
+                  "heightUnit": "content",
+                  "children": [],
+                  "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLLABLE|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_WITH_ARROW|SNAPPABLE",
+                  "hiddenFlagType": "literal",
+                  "clickableFlagType": "literal",
+                  "flagScrollbarMode": "",
+                  "flagScrollDirection": "",
+                  "scrollSnapX": "",
+                  "scrollSnapY": "",
+                  "checkedStateType": "literal",
+                  "disabledStateType": "literal",
+                  "states": "",
+                  "localStyles": {
+                    "objID": "7d9a840d-202b-4a52-8d3e-b53e37815981",
+                    "definition": {
+                      "MAIN": {
+                        "DEFAULT": {
+                          "align": "CENTER"
+                        }
+                      }
+                    }
+                  },
+                  "group": "",
+                  "groupIndex": 0,
+                  "text": "HOLD",
+                  "textType": "literal",
+                  "longMode": "WRAP",
+                  "recolor": false,
+                  "useStaticText": true
+                }
+              ],
+              "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_ON_FOCUS|SCROLL_WITH_ARROW|SNAPPABLE",
+              "hiddenFlagType": "expression",
+              "clickableFlag": true,
+              "clickableFlagType": "literal",
+              "flagScrollbarMode": "",
+              "flagScrollDirection": "",
+              "scrollSnapX": "",
+              "scrollSnapY": "",
+              "checkedStateType": "expression",
+              "disabledStateType": "literal",
+              "states": "",
+              "useStyle": "btn_hold",
+              "localStyles": {
+                "objID": "5f27057a-4612-4f8e-9d3b-82b9ffa180f3"
+              },
+              "group": "",
+              "groupIndex": 0,
+              "hiddenFlag": "brew_idle",
+              "checkedState": "brew_hold"
             },
             {
               "objID": "b612006d-5786-43e8-8e4f-1d0e933b65b4",
@@ -1757,6 +1885,29 @@
                 "radius": 3,
                 "border_width": 0,
                 "pad_all": 0
+              }
+            }
+          }
+        }
+      },
+      {
+        "objID": "7f307cc0-4abd-48db-ab0a-b664dbd53239",
+        "name": "btn_hold",
+        "forWidgetType": "LVGLButtonWidget",
+        "childStyles": [],
+        "definition": {
+          "objID": "a858821f-a561-4315-a82a-53d78af7cbc8",
+          "definition": {
+            "MAIN": {
+              "DEFAULT": {
+                "bg_color": "track",
+                "bg_opa": 255,
+                "radius": 32,
+                "text_color": "text"
+              },
+              "CHECKED": {
+                "bg_color": "accent",
+                "text_color": "bg"
               }
             }
           }

@@ -61,11 +61,19 @@ static void applyCommand(MachineState &state, const proto::CommandMsg &cmd) {
         if (!state.auto_brew_enabled) {
             state.auto_brew_enabled = true;
             state.auto_brew_start_time = millis();
-        } else {
-            state.auto_brew_enabled = false;
-            state.pump_active = false;
-            state.solenoid_active = false;
+            state.brew_hold = false;
         }
+        break;
+
+    case proto::CMD_BREW_STOP:
+        state.auto_brew_enabled = false;
+        state.brew_hold = false;
+        state.pump_active = false;
+        state.solenoid_active = false;
+        break;
+
+    case proto::CMD_BREW_HOLD_TOGGLE:
+        if (state.auto_brew_enabled) state.brew_hold = !state.brew_hold;
         break;
 
     case proto::CMD_STEAM_TOGGLE:
@@ -115,7 +123,8 @@ static void sendState(const MachineState &state) {
     msg.setpoint_x10 = (int16_t)lround(state.target_temperature * 10);
     msg.brew_duration_s = (uint16_t)(state.auto_brew_duration / 1000);
     msg.flags = (state.auto_brew_enabled ? proto::FLAG_BREWING : 0) |
-                (state.mode == ControlMode::BANG_BANG ? proto::FLAG_STEAM : 0);
+                (state.mode == ControlMode::BANG_BANG ? proto::FLAG_STEAM : 0) |
+                (state.brew_hold ? proto::FLAG_HOLD : 0);
     uint16_t elapsed_s;
     uint8_t stage;
     brewProgress(state, elapsed_s, stage);

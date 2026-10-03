@@ -38,6 +38,10 @@ extern const char *get_var_brew_button_text();
 extern void set_var_brew_button_text(const char *value);
 extern const char *get_var_brew_status_text();
 extern void set_var_brew_status_text(const char *value);
+extern bool get_var_brew_hold();
+extern void set_var_brew_hold(bool value);
+extern bool get_var_brew_idle();
+extern void set_var_brew_idle(bool value);
 
 #ifdef __cplusplus
 }

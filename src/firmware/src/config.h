@@ -32,3 +32,5 @@ constexpr int AUTO_BREW_BUTTON_PIN = 0;
 constexpr long  DEFAULT_AUTO_BREW_DURATION = 30000; // ms
 constexpr long DEFAULT_AUTO_BREW_PREINFUSION_DURATION = 2000; // ms
 constexpr long DEFAULT_AUTO_BREW_BLOOM_DURATION = 5000; // ms
+
+constexpr long MAX_BREW_HOLD_EXTRA = 60000; // ms, failsafe: hold can extend a brew by at most this much

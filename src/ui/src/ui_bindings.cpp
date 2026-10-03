@@ -11,7 +11,7 @@ static char s_temperature_buf[16] = "--", s_setpoint_buf[16] = "--", s_brew_seco
 static const char *s_temperature_text = s_temperature_buf, *s_setpoint_text = s_setpoint_buf,
                   *s_brew_seconds_text = s_brew_seconds_buf;
 
-static bool s_steam_active, s_brewing;
+static bool s_steam_active, s_brewing, s_brew_hold, s_brew_idle = true;
 static char s_brew_button_buf[8] = "BREW", s_brew_status_buf[32] = "";
 static const char *s_brew_button_text = s_brew_button_buf, *s_brew_status_text = s_brew_status_buf;
 
@@ -37,6 +37,8 @@ void app_on_controller_state(const proto::StateMsg &st)
 
     s_steam_active = st.flags & proto::FLAG_STEAM;
     s_brewing = st.flags & proto::FLAG_BREWING;
+    s_brew_hold = st.flags & proto::FLAG_HOLD;
+    s_brew_idle = !s_brewing;
     // The BREW button doubles as a cancel button while brewing.
     snprintf(s_brew_button_buf, sizeof(s_brew_button_buf), "%s", s_brewing ? "STOP" : "BREW");
 
@@ -82,6 +84,10 @@ void set_var_brew_seconds(int32_t v) { s_brew_seconds = v; }
 
 bool get_var_steam_active() { return s_steam_active; }
 void set_var_steam_active(bool v) { s_steam_active = v; }
+bool get_var_brew_hold() { return s_brew_hold; }
+void set_var_brew_hold(bool v) { s_brew_hold = v; }
+bool get_var_brew_idle() { return s_brew_idle; }
+void set_var_brew_idle(bool v) { s_brew_idle = v; }
 bool get_var_brewing() { return s_brewing; }
 void set_var_brewing(bool v) { s_brewing = v; }
 const char *get_var_brew_button_text() { return s_brew_button_text; }
@@ -96,7 +102,12 @@ void set_var_setpoint_text(const char *v) { s_setpoint_text = v; }
 const char *get_var_brew_seconds_text() { return s_brew_seconds_text; }
 void set_var_brew_seconds_text(const char *v) { s_brew_seconds_text = v; }
 
-void action_brew_start(lv_event_t *e) { controller_link_send_command(proto::CMD_BREW_START); }
+// The BREW button starts a brew, and becomes STOP while one is running.
+void action_brew_start(lv_event_t *e)
+{
+    controller_link_send_command(s_brewing ? proto::CMD_BREW_STOP : proto::CMD_BREW_START);
+}
+void action_brew_hold_toggle(lv_event_t *e) { controller_link_send_command(proto::CMD_BREW_HOLD_TOGGLE); }
 void action_steam_toggle(lv_event_t *e) { controller_link_send_command(proto::CMD_STEAM_TOGGLE); }
 void action_setpoint_inc(lv_event_t *e) { change_setpoint(+1); }
 void action_setpoint_dec(lv_event_t *e) { change_setpoint(-1); }

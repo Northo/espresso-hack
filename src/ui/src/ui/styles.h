@@ -68,6 +68,12 @@ lv_style_t *get_style_sheet_grab_MAIN_DEFAULT();
 void add_style_sheet_grab(lv_obj_t *obj);
 void remove_style_sheet_grab(lv_obj_t *obj);
 
+// Style: btn_hold
+lv_style_t *get_style_btn_hold_MAIN_DEFAULT();
+lv_style_t *get_style_btn_hold_MAIN_CHECKED();
+void add_style_btn_hold(lv_obj_t *obj);
+void remove_style_btn_hold(lv_obj_t *obj);
+
 #ifdef __cplusplus
 }
 #endif

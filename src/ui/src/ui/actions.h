@@ -15,6 +15,7 @@ extern void action_brew_time_inc(lv_event_t * e);
 extern void action_brew_time_dec(lv_event_t * e);
 extern void action_main_gesture(lv_event_t * e);
 extern void action_settings_gesture(lv_event_t * e);
+extern void action_brew_hold_toggle(lv_event_t * e);
 
 #ifdef __cplusplus
 }

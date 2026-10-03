@@ -15,6 +15,7 @@ enum MsgType : uint8_t {
 enum StateFlags : uint8_t {
     FLAG_BREWING = 1 << 0,
     FLAG_STEAM = 1 << 1,
+    FLAG_HOLD = 1 << 2, // brew hold: keep brewing past the brew duration
 };
 
 enum BrewStage : uint8_t {
@@ -35,10 +36,12 @@ struct __attribute__((packed)) StateMsg {
 };
 
 enum CommandId : uint8_t {
-    CMD_BREW_START = 1,
+    CMD_BREW_START = 1,        // starts a brew; ignored if one is running
     CMD_STEAM_TOGGLE = 2,
     CMD_SET_SETPOINT = 3,      // value: setpoint in 0.1 °C
     CMD_SET_BREW_DURATION = 4, // value: seconds
+    CMD_BREW_STOP = 5,         // stops a running brew
+    CMD_BREW_HOLD_TOGGLE = 6,  // toggles hold while brewing
 };
 
 struct __attribute__((packed)) CommandMsg {

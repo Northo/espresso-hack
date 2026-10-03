@@ -2,9 +2,6 @@
 #include <LilyGo_RGBPanel.h>
 #include <LV_Helper.h>
 #include "link/controller_link.h"
-#ifdef DISPLAY_FLIP
-#include "display_flip.h"
-#endif
 #ifndef LINK_NO_OTA
 #include "net_ota.h"
 #endif
@@ -39,9 +36,6 @@ void setup()
 #endif
 
     beginLvglHelper(panel);   // LVGL display + touch drivers
-#ifdef DISPLAY_FLIP
-    display_flip_begin(panel); // mounted upside down
-#endif
 
 #ifdef HAS_EEZ_UI
     ui_init();

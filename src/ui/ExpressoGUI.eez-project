@@ -250,6 +250,13 @@
         "type": "integer",
         "defaultValue": "275",
         "native": true
+      },
+      {
+        "objID": "a213cef0-24b9-4b17-86ce-c34164342175",
+        "name": "temperature_x10",
+        "type": "integer",
+        "defaultValue": "930",
+        "native": true
       }
     ],
     "structures": [],
@@ -514,13 +521,13 @@
               "group": "",
               "groupIndex": 0,
               "useAngle": false,
-              "rangeMin": 85,
+              "rangeMin": 850,
               "rangeMinType": "literal",
-              "rangeMax": 100,
+              "rangeMax": 1000,
               "rangeMaxType": "literal",
-              "value": "temperature",
+              "value": "temperature_x10",
               "valueType": "expression",
-              "previewValue": "93",
+              "previewValue": "930",
               "mode": "NORMAL",
               "startAngle": 200,
               "startAngleType": "literal",

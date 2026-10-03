@@ -25,6 +25,8 @@ typedef struct _objects_t {
     lv_obj_t *clean;
     lv_obj_t *main_1;
     lv_obj_t *chart;
+    lv_obj_t *temperature;
+    lv_obj_t *setpoint_indicator;
     lv_obj_t *obj0;
     lv_obj_t *obj1;
     lv_obj_t *obj2;
@@ -39,18 +41,16 @@ typedef struct _objects_t {
     lv_obj_t *obj11;
     lv_obj_t *obj12;
     lv_obj_t *obj13;
+    lv_obj_t *setpoint;
     lv_obj_t *obj14;
     lv_obj_t *obj15;
-    lv_obj_t *setpoint;
     lv_obj_t *obj16;
     lv_obj_t *obj17;
     lv_obj_t *obj18;
     lv_obj_t *obj19;
-    lv_obj_t *obj20;
-    lv_obj_t *obj21;
     lv_obj_t *temp_chart;
     lv_obj_t *temp_scale;
-    lv_obj_t *obj22;
+    lv_obj_t *obj20;
 } objects_t;
 
 extern objects_t objects;

@@ -995,7 +995,8 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
-          "0": {
+          "0": {},
+          "1": {
             "$selected": true
           },
           "5": {},

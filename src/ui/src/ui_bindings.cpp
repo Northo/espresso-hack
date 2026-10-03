@@ -184,6 +184,9 @@ void set_var_setpoint_angle_start(int32_t v) { s_setpoint_angle_start = v; }
 int32_t get_var_setpoint_angle_end() { return s_setpoint_angle_end; }
 void set_var_setpoint_angle_end(int32_t v) { s_setpoint_angle_end = v; }
 
+int32_t get_var_temperature_x10() { return s_temperature_x10; }
+void set_var_temperature_x10(int32_t v) { s_temperature_x10 = (int16_t)v; }
+
 const char *get_var_temperature_text() { return s_temperature_text; }
 void set_var_temperature_text(const char *v) { s_temperature_text = v; }
 const char *get_var_setpoint_text() { return s_setpoint_text; }

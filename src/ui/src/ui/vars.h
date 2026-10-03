@@ -58,6 +58,8 @@ extern int32_t get_var_setpoint_angle_start();
 extern void set_var_setpoint_angle_start(int32_t value);
 extern int32_t get_var_setpoint_angle_end();
 extern void set_var_setpoint_angle_end(int32_t value);
+extern int32_t get_var_temperature_x10();
+extern void set_var_temperature_x10(int32_t value);
 
 #ifdef __cplusplus
 }

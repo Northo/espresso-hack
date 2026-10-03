@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 #include "config.h"
 
 enum class ControlMode {
@@ -15,6 +16,9 @@ inline const char* controlModeToString(ControlMode mode) {
         default:                       return "UNKNOWN";
     }
 }
+
+// Values match proto::CleanState (src/shared/protocol.h).
+enum class CleanState : uint8_t { IDLE = 0, DETERGENT = 1, WAIT_REMOVE = 2, WATER = 3, DONE = 4 };
 
 struct MachineState {
     ControlMode mode = ControlMode::PID;
@@ -43,6 +47,12 @@ struct MachineState {
     long auto_brew_preinfusion_duration = DEFAULT_AUTO_BREW_PREINFUSION_DURATION;
     long auto_brew_duration = DEFAULT_AUTO_BREW_DURATION;
     long auto_brew_bloom_duration = DEFAULT_AUTO_BREW_BLOOM_DURATION;
+
+    // Cleaning sequence (see cleaning.cpp)
+    CleanState clean_state = CleanState::IDLE;
+    uint8_t clean_cycle = 0;          // 1-based
+    bool clean_pump_phase = false;    // true: pump on, false: off/venting
+    unsigned long clean_phase_start = 0;
 
     // Relay parameters
     int relay_window_size = 1000; // ms for time-proportional control

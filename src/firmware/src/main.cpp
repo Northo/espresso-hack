@@ -3,6 +3,7 @@
 #include <esp_log.h>
 #include "state.h"
 #include "controller.h"
+#include "cleaning.h"
 #include "relay.h"
 #include "thermocouple.h"
 #include "display.h"
@@ -41,6 +42,7 @@ void loop() {
     }
     updateThermocoupleReading(machine_state);
     updateController(machine_state);
+    updateCleaning(machine_state);
     updateRelay(machine_state);
     handleButtons(machine_state);
 

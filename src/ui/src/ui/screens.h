@@ -13,12 +13,14 @@ enum ScreensEnum {
     _SCREEN_ID_FIRST = 1,
     SCREEN_ID_MAIN = 1,
     SCREEN_ID_SETTINGS = 2,
-    _SCREEN_ID_LAST = 2
+    SCREEN_ID_CLEAN = 3,
+    _SCREEN_ID_LAST = 3
 };
 
 typedef struct _objects_t {
     lv_obj_t *main;
     lv_obj_t *settings;
+    lv_obj_t *clean;
     lv_obj_t *obj0;
     lv_obj_t *obj1;
     lv_obj_t *obj2;
@@ -29,6 +31,12 @@ typedef struct _objects_t {
     lv_obj_t *obj7;
     lv_obj_t *obj8;
     lv_obj_t *obj9;
+    lv_obj_t *obj10;
+    lv_obj_t *obj11;
+    lv_obj_t *obj12;
+    lv_obj_t *obj13;
+    lv_obj_t *obj14;
+    lv_obj_t *obj15;
 } objects_t;
 
 extern objects_t objects;
@@ -38,6 +46,9 @@ void tick_screen_main();
 
 void create_screen_settings();
 void tick_screen_settings();
+
+void create_screen_clean();
+void tick_screen_clean();
 
 void tick_screen_by_id(enum ScreensEnum screenId);
 void tick_screen(int screen_index);

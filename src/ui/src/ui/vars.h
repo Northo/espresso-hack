@@ -42,6 +42,18 @@ extern bool get_var_brew_hold();
 extern void set_var_brew_hold(bool value);
 extern bool get_var_brew_idle();
 extern void set_var_brew_idle(bool value);
+extern const char *get_var_clean_title_text();
+extern void set_var_clean_title_text(const char *value);
+extern const char *get_var_clean_detail_text();
+extern void set_var_clean_detail_text(const char *value);
+extern const char *get_var_clean_primary_text();
+extern void set_var_clean_primary_text(const char *value);
+extern const char *get_var_clean_secondary_text();
+extern void set_var_clean_secondary_text(const char *value);
+extern bool get_var_clean_running();
+extern void set_var_clean_running(bool value);
+extern bool get_var_clean_done();
+extern void set_var_clean_done(bool value);
 
 #ifdef __cplusplus
 }

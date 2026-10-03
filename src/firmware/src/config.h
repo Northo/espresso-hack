@@ -34,3 +34,6 @@ constexpr long DEFAULT_AUTO_BREW_PREINFUSION_DURATION = 2000; // ms
 constexpr long DEFAULT_AUTO_BREW_BLOOM_DURATION = 5000; // ms
 
 constexpr long MAX_BREW_HOLD_EXTRA = 60000; // ms, failsafe: hold can extend a brew by at most this much
+
+constexpr long CLEAN_PUMP_ON_MS = 10000;  // cleaning cycle: pump + solenoid on (pressurise)
+constexpr long CLEAN_PUMP_OFF_MS = 10000; // cleaning cycle: both off (group vents to drain)

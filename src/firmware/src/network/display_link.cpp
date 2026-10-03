@@ -1,5 +1,6 @@
 #include "network/display_link.h"
 #include "config.h"
+#include "cleaning.h"
 #include "protocol.h"
 #include <Arduino.h>
 #include <WiFi.h>
@@ -57,7 +58,20 @@ static void applyCommand(MachineState &state, const proto::CommandMsg &cmd) {
     ESP_LOGI(TAG, "command %u value %d", cmd.cmd, cmd.value);
 
     switch (cmd.cmd) {
+    case proto::CMD_CLEAN_START:
+        startCleaning(state);
+        break;
+
+    case proto::CMD_CLEAN_CANCEL:
+        cancelCleaning(state);
+        break;
+
+    case proto::CMD_CLEAN_CONTINUE:
+        continueCleaning(state);
+        break;
+
     case proto::CMD_BREW_START:
+        if (state.clean_state != CleanState::IDLE) break; // cleaning in progress
         if (!state.auto_brew_enabled) {
             state.auto_brew_enabled = true;
             state.auto_brew_start_time = millis();
@@ -124,7 +138,12 @@ static void sendState(const MachineState &state) {
     msg.brew_duration_s = (uint16_t)(state.auto_brew_duration / 1000);
     msg.flags = (state.auto_brew_enabled ? proto::FLAG_BREWING : 0) |
                 (state.mode == ControlMode::BANG_BANG ? proto::FLAG_STEAM : 0) |
-                (state.brew_hold ? proto::FLAG_HOLD : 0);
+                (state.brew_hold ? proto::FLAG_HOLD : 0) |
+                (state.clean_pump_phase && (state.clean_state == CleanState::DETERGENT ||
+                                            state.clean_state == CleanState::WATER)
+                     ? proto::FLAG_CLEAN_PUMP : 0);
+    msg.clean_state = (uint8_t)state.clean_state;
+    msg.clean_cycle = state.clean_cycle;
     uint16_t elapsed_s;
     uint8_t stage;
     brewProgress(state, elapsed_s, stage);

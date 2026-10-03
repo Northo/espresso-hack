@@ -19,9 +19,13 @@ import serial
 
 START = 0x7E
 MSG_STATE, MSG_COMMAND = 1, 2
-FLAG_BREWING, FLAG_STEAM, FLAG_HOLD = 1, 2, 4
+FLAG_BREWING, FLAG_STEAM, FLAG_HOLD, FLAG_CLEAN_PUMP = 1, 2, 4, 8
 CMD_BREW_START, CMD_STEAM_TOGGLE, CMD_SET_SETPOINT, CMD_SET_BREW_DURATION, CMD_BREW_STOP, CMD_BREW_HOLD_TOGGLE = 1, 2, 3, 4, 5, 6
-CMD_NAMES = {1: "BREW_START", 2: "STEAM_TOGGLE", 3: "SET_SETPOINT", 4: "SET_BREW_DURATION", 5: "BREW_STOP", 6: "BREW_HOLD_TOGGLE"}
+CMD_CLEAN_START, CMD_CLEAN_CANCEL, CMD_CLEAN_CONTINUE = 7, 8, 9
+CLEAN_IDLE, CLEAN_DETERGENT, CLEAN_WAIT_REMOVE, CLEAN_WATER, CLEAN_DONE = range(5)
+CLEAN_CYCLES = 5
+CMD_NAMES = {1: "BREW_START", 2: "STEAM_TOGGLE", 3: "SET_SETPOINT", 4: "SET_BREW_DURATION", 5: "BREW_STOP", 6: "BREW_HOLD_TOGGLE",
+             7: "CLEAN_START", 8: "CLEAN_CANCEL", 9: "CLEAN_CONTINUE"}
 STEAM_TEMP = 130.0
 
 
@@ -70,7 +74,12 @@ class Parser:
 
 
 class FakeMachine:
-    def __init__(self):
+    def __init__(self, clean_scale=1.0):
+        self.clean_scale = clean_scale  # < 1 speeds up the 10 s on / 10 s off cleaning phases
+        self.clean_state = CLEAN_IDLE
+        self.clean_cycle = 0
+        self.clean_pump = False
+        self.clean_phase_start = 0.0
         self.temp = 25.0
         self.setpoint = 93.0
         self.brew_duration = 25
@@ -88,18 +97,33 @@ class FakeMachine:
         if self.temp > self.target():
             self.temp -= 0.2 * dt
 
+    def step_clean(self):
+        if self.clean_state not in (CLEAN_DETERGENT, CLEAN_WATER):
+            return
+        phase = 10.0 * self.clean_scale
+        if time.time() - self.clean_phase_start < phase:
+            return
+        self.clean_phase_start = time.time()
+        if self.clean_pump:
+            self.clean_pump = False
+        elif self.clean_cycle < CLEAN_CYCLES:
+            self.clean_cycle += 1
+            self.clean_pump = True
+        else:
+            self.clean_state = CLEAN_WAIT_REMOVE if self.clean_state == CLEAN_DETERGENT else CLEAN_DONE
+
     def state_payload(self) -> bytes:
         brewing = time.time() < self.brew_until or (self.hold and self.brew_until > 0)
         if not brewing:
             self.hold = False
             self.brew_until = 0.0
-        flags = (FLAG_BREWING if brewing else 0) | (FLAG_STEAM if self.steam else 0) | (FLAG_HOLD if self.hold else 0)
+        flags = (FLAG_BREWING if brewing else 0) | (FLAG_STEAM if self.steam else 0) | (FLAG_HOLD if self.hold else 0) | (FLAG_CLEAN_PUMP if self.clean_pump else 0)
         elapsed = max(0.0, time.time() - self.brew_start) if brewing else 0.0
         stage = 0
         if brewing:
             stage = 1 if elapsed < 2 else 2 if elapsed < 7 else 3
-        return struct.pack("<BhhHBHB", MSG_STATE, round(self.temp * 10), round(self.target() * 10),
-                           self.brew_duration, flags, int(elapsed), stage)
+        return struct.pack("<BhhHBHBBB", MSG_STATE, round(self.temp * 10), round(self.target() * 10),
+                           self.brew_duration, flags, int(elapsed), stage, self.clean_state, self.clean_cycle)
 
     def handle(self, payload: bytes):
         if len(payload) != 4 or payload[0] != MSG_COMMAND:
@@ -111,6 +135,16 @@ class FakeMachine:
             if self.brew_until <= 0:
                 self.brew_start = time.time()
                 self.brew_until = self.brew_start + 7 + self.brew_duration
+        elif cmd == CMD_CLEAN_START:
+            if self.clean_state == CLEAN_IDLE and self.brew_until <= 0:
+                self.clean_state, self.clean_cycle, self.clean_pump = CLEAN_DETERGENT, 1, True
+                self.clean_phase_start = time.time()
+        elif cmd == CMD_CLEAN_CONTINUE:
+            if self.clean_state == CLEAN_WAIT_REMOVE:
+                self.clean_state, self.clean_cycle, self.clean_pump = CLEAN_WATER, 1, True
+                self.clean_phase_start = time.time()
+        elif cmd == CMD_CLEAN_CANCEL:
+            self.clean_state, self.clean_cycle, self.clean_pump = CLEAN_IDLE, 0, False
         elif cmd == CMD_BREW_STOP:
             self.brew_until = 0.0
             self.hold = False
@@ -129,10 +163,11 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("port")
     ap.add_argument("--baud", type=int, default=115200)
+    ap.add_argument("--clean-scale", type=float, default=1.0, help="scale cleaning phase times (0.1 = 1 s phases)")
     ap.add_argument("--rate", type=float, default=2.0, help="state messages per second")
     args = ap.parse_args()
 
-    m, parser = FakeMachine(), Parser()
+    m, parser = FakeMachine(args.clean_scale), Parser()
     with serial.Serial(args.port, args.baud, timeout=0.05) as ser:
         last = time.time()
         next_tx = 0.0
@@ -141,6 +176,7 @@ def main():
                 m.handle(payload)
             now = time.time()
             m.step(now - last)
+            m.step_clean()
             last = now
             if now >= next_tx:
                 ser.write(frame(m.state_payload()))

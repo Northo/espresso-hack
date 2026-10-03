@@ -9,14 +9,11 @@
 #include <stdio.h>
 
 static int32_t s_temperature, s_setpoint, s_brew_seconds;
-// Setpoint marker on the Main arc: a thin wedge (angles in degrees) drawn around the setpoint position.
-// Matches the arc geometry in the EEZ project: 85-100 °C spans 200..340 degrees.
-static int32_t s_setpoint_angle_start = 200, s_setpoint_angle_end = 202;
 // Latest raw controller values (0.1 °C) feeding the history chart.
 static bool s_have_state, s_chart_ready;
 static int16_t s_temperature_x10, s_setpoint_x10;
 static uint32_t s_chart_last_ms;
-static uint32_t s_setpoint_hold_until; // ignore controller setpoints until then (while dragging the marker)
+static uint32_t s_setpoint_hold_until; // ignore controller setpoints until then (while dragging the knob)
 
 static char s_temperature_buf[16] = "--", s_setpoint_buf[16] = "--", s_brew_seconds_buf[16] = "--";
 static const char *s_temperature_text = s_temperature_buf, *s_setpoint_text = s_setpoint_buf,
@@ -37,18 +34,8 @@ static const char *s_clean_title_text = s_clean_title_buf, *s_clean_detail_text 
 static constexpr int32_t SETPOINT_MIN = 20, SETPOINT_MAX = 160; // matches the arc range
 static constexpr int32_t BREW_MIN = 1, BREW_MAX = 120;
 
-static void refresh_setpoint_marker()
-{
-    constexpr int32_t TEMP_MIN = 85, TEMP_MAX = 100, ANGLE_MIN = 200, ANGLE_MAX = 340, HALF_WIDTH = 1;
-    int32_t sp = s_setpoint < TEMP_MIN ? TEMP_MIN : (s_setpoint > TEMP_MAX ? TEMP_MAX : s_setpoint);
-    int32_t a = ANGLE_MIN + (sp - TEMP_MIN) * (ANGLE_MAX - ANGLE_MIN) / (TEMP_MAX - TEMP_MIN);
-    s_setpoint_angle_start = a - HALF_WIDTH;
-    s_setpoint_angle_end = a + HALF_WIDTH;
-}
-
 static void refresh_texts()
 {
-    refresh_setpoint_marker();
     snprintf(s_temperature_buf, sizeof(s_temperature_buf), "%ld\xC2\xB0" "C", (long)s_temperature);
     snprintf(s_setpoint_buf, sizeof(s_setpoint_buf), "%ld\xC2\xB0" "C", (long)s_setpoint);
     snprintf(s_brew_seconds_buf, sizeof(s_brew_seconds_buf), "%lds", (long)s_brew_seconds);
@@ -154,8 +141,7 @@ extern "C" {
 int32_t get_var_temperature() { return s_temperature; }
 void set_var_temperature(int32_t v) { s_temperature = v; }
 int32_t get_var_setpoint() { return s_setpoint; }
-// Written by the Main screen's setpoint arc when the user drags it (it is a normal LVGL arc, made invisible,
-// laid over the wedge). Sends the new setpoint to the controller.
+// Written by the Main screen's setpoint arc when the user drags its knob. Sends the new setpoint to the controller.
 void set_var_setpoint(int32_t v)
 {
     if (s_steam_active) return; // the steam setpoint is fixed; the arc snaps back on the next tick
@@ -192,11 +178,6 @@ const char *get_var_brew_button_text() { return s_brew_button_text; }
 void set_var_brew_button_text(const char *v) { s_brew_button_text = v; }
 const char *get_var_brew_status_text() { return s_brew_status_text; }
 void set_var_brew_status_text(const char *v) { s_brew_status_text = v; }
-
-int32_t get_var_setpoint_angle_start() { return s_setpoint_angle_start; }
-void set_var_setpoint_angle_start(int32_t v) { s_setpoint_angle_start = v; }
-int32_t get_var_setpoint_angle_end() { return s_setpoint_angle_end; }
-void set_var_setpoint_angle_end(int32_t v) { s_setpoint_angle_end = v; }
 
 int32_t get_var_temperature_x10() { return s_temperature_x10; }
 void set_var_temperature_x10(int32_t v) { s_temperature_x10 = (int16_t)v; }

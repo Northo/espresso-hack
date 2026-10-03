@@ -91,13 +91,6 @@ lv_style_t *get_style_lbl_range_MAIN_DEFAULT();
 void add_style_lbl_range(lv_obj_t *obj);
 void remove_style_lbl_range(lv_obj_t *obj);
 
-// Style: arc_touch
-lv_style_t *get_style_arc_touch_MAIN_DEFAULT();
-lv_style_t *get_style_arc_touch_INDICATOR_DEFAULT();
-lv_style_t *get_style_arc_touch_KNOB_DEFAULT();
-void add_style_arc_touch(lv_obj_t *obj);
-void remove_style_arc_touch(lv_obj_t *obj);
-
 #ifdef __cplusplus
 }
 #endif

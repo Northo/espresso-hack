@@ -81,6 +81,11 @@ lv_style_t *get_style_chart_flat_INDICATOR_DEFAULT();
 void add_style_chart_flat(lv_obj_t *obj);
 void remove_style_chart_flat(lv_obj_t *obj);
 
+// Style: arc_start_cap
+lv_style_t *get_style_arc_start_cap_MAIN_DEFAULT();
+void add_style_arc_start_cap(lv_obj_t *obj);
+void remove_style_arc_start_cap(lv_obj_t *obj);
+
 #ifdef __cplusplus
 }
 #endif

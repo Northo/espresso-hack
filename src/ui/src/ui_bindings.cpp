@@ -170,6 +170,9 @@ const char *get_var_clean_secondary_text() { return s_clean_secondary_text; }
 void set_var_clean_secondary_text(const char *v) { s_clean_secondary_text = v; }
 bool get_var_brew_hold() { return s_brew_hold; }
 void set_var_brew_hold(bool v) { s_brew_hold = v; }
+// True when the temperature is below the arc range (85 °C): hides the arc's start-cap dot.
+bool get_var_temp_below_range() { return s_temperature_x10 < 850; }
+void set_var_temp_below_range(bool v) {}
 bool get_var_brew_idle() { return s_brew_idle; }
 void set_var_brew_idle(bool v) { s_brew_idle = v; }
 bool get_var_brewing() { return s_brewing; }

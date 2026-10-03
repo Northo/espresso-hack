@@ -113,13 +113,12 @@
                   "enableClose": false,
                   "icon": "material:folder_open"
                 }
-              ],
-              "active": true
+              ]
             },
             {
               "type": "tabset",
               "id": "EDITORS",
-              "weight": 47.4609375,
+              "weight": 41.11418827399381,
               "enableDeleteWhenEmpty": false,
               "enableClose": false,
               "children": [
@@ -139,7 +138,7 @@
             {
               "type": "row",
               "id": "#9fd4423a-c4ea-452c-9213-d3354b1e237f",
-              "weight": 37.538699690402474,
+              "weight": 43.88544891640867,
               "children": [
                 {
                   "type": "tabset",
@@ -154,7 +153,8 @@
                       "enableClose": false,
                       "icon": "svg:properties"
                     }
-                  ]
+                  ],
+                  "active": true
                 },
                 {
                   "type": "tabset",
@@ -995,10 +995,10 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
-          "0": {},
-          "1": {
+          "0": {
             "$selected": true
           },
+          "1": {},
           "5": {},
           "6": {},
           "7": {}
@@ -1128,9 +1128,11 @@
   "showComponentDescriptions": true,
   "logsPanelFilter": "all",
   "selectedStylePropertyName": "",
-  "lvglPart": "MAIN",
+  "lvglPart": "INDICATOR",
   "lvglState": "DEFAULT",
-  "lvglExpandedPropertiesGroup": [],
+  "lvglExpandedPropertiesGroup": [
+    "ARC"
+  ],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
   "flowZoom": 1,

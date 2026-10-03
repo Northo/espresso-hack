@@ -57,7 +57,7 @@ lv_style_t *get_style_arc_temp_MAIN_DEFAULT() {
 void init_style_arc_temp_INDICATOR_DEFAULT(lv_style_t *style) {
     lv_style_set_arc_color(style, lv_color_hex(theme_colors[active_theme_index][2]));
     lv_style_set_arc_width(style, 16);
-    lv_style_set_arc_rounded(style, true);
+    lv_style_set_arc_rounded(style, false);
 };
 
 lv_style_t *get_style_arc_temp_INDICATOR_DEFAULT() {
@@ -566,6 +566,39 @@ void remove_style_chart_flat(lv_obj_t *obj) {
 };
 
 //
+// Style: arc_start_cap
+//
+
+void init_style_arc_start_cap_MAIN_DEFAULT(lv_style_t *style) {
+    lv_style_set_bg_color(style, lv_color_hex(theme_colors[active_theme_index][2]));
+    lv_style_set_bg_opa(style, 255);
+    lv_style_set_radius(style, 255);
+    lv_style_set_border_width(style, 0);
+    lv_style_set_shadow_width(style, 0);
+    lv_style_set_outline_width(style, 0);
+};
+
+lv_style_t *get_style_arc_start_cap_MAIN_DEFAULT() {
+    static lv_style_t *style;
+    if (!style) {
+        style = (lv_style_t *)lv_malloc(sizeof(lv_style_t));
+        lv_style_init(style);
+        init_style_arc_start_cap_MAIN_DEFAULT(style);
+    }
+    return style;
+};
+
+void add_style_arc_start_cap(lv_obj_t *obj) {
+    (void)obj;
+    lv_obj_add_style(obj, get_style_arc_start_cap_MAIN_DEFAULT(), LV_PART_MAIN | LV_STATE_DEFAULT);
+};
+
+void remove_style_arc_start_cap(lv_obj_t *obj) {
+    (void)obj;
+    lv_obj_remove_style(obj, get_style_arc_start_cap_MAIN_DEFAULT(), LV_PART_MAIN | LV_STATE_DEFAULT);
+};
+
+//
 //
 //
 
@@ -585,6 +618,7 @@ void add_style(lv_obj_t *obj, int32_t styleIndex) {
         add_style_sheet_grab,
         add_style_btn_hold,
         add_style_chart_flat,
+        add_style_arc_start_cap,
     };
     add_style_funcs[styleIndex](obj);
 }
@@ -605,6 +639,7 @@ void remove_style(lv_obj_t *obj, int32_t styleIndex) {
         remove_style_sheet_grab,
         remove_style_btn_hold,
         remove_style_chart_flat,
+        remove_style_arc_start_cap,
     };
     remove_style_funcs[styleIndex](obj);
 }

@@ -78,7 +78,7 @@
             {
               "type": "tabset",
               "id": "#05a0a87e-4348-4f1a-819a-3e0a80ab630c",
-              "weight": 15.000362809597524,
+              "weight": 20.58823529411765,
               "enableTabStrip": false,
               "children": [
                 {
@@ -118,7 +118,7 @@
             {
               "type": "tabset",
               "id": "EDITORS",
-              "weight": 41.11418827399381,
+              "weight": 35.526315789473685,
               "enableDeleteWhenEmpty": false,
               "enableClose": false,
               "children": [
@@ -133,7 +133,8 @@
                   },
                   "icon": "svg:page"
                 }
-              ]
+              ],
+              "active": true
             },
             {
               "type": "row",
@@ -153,8 +154,7 @@
                       "enableClose": false,
                       "icon": "svg:properties"
                     }
-                  ],
-                  "active": true
+                  ]
                 },
                 {
                   "type": "tabset",
@@ -995,21 +995,23 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
-          "0": {
-            "$selected": true
-          },
+          "0": {},
           "1": {},
+          "2": {},
           "5": {},
           "6": {},
-          "7": {}
-        }
+          "7": {},
+          "8": {},
+          "12": {}
+        },
+        "$selected": true
       },
       "transform": {
         "translate": {
           "x": -240,
           "y": -240
         },
-        "scale": 1
+        "scale": 1.25
       },
       "timeline": {
         "isEditorActive": false,
@@ -1128,13 +1130,14 @@
   "showComponentDescriptions": true,
   "logsPanelFilter": "all",
   "selectedStylePropertyName": "",
-  "lvglPart": "INDICATOR",
+  "lvglPart": "KNOB",
   "lvglState": "DEFAULT",
   "lvglExpandedPropertiesGroup": [
-    "ARC"
+    "LINE",
+    "IMAGE"
   ],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
-  "flowZoom": 1,
+  "flowZoom": 1.25,
   "implementationLanguage": "C"
 }

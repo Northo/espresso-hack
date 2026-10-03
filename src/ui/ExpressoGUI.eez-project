@@ -608,6 +608,7 @@
                 "conditionalStyles": [],
                 "childStyles": []
               },
+              "hiddenInEditor": false,
               "timeline": [],
               "eventHandlers": [],
               "identifier": "setpoint_indicator",
@@ -1235,6 +1236,7 @@
                 "conditionalStyles": [],
                 "childStyles": []
               },
+              "hiddenInEditor": false,
               "timeline": [],
               "eventHandlers": [],
               "identifier": "temp_ticks",
@@ -1306,6 +1308,72 @@
               "mainArcRounded": false,
               "minorTicksLength": 9,
               "minorTicksWidth": 0
+            },
+            {
+              "objID": "828e35fc-d346-45ac-b526-eee40534da61",
+              "type": "LVGLArcWidget",
+              "left": 20,
+              "top": 20,
+              "width": 440,
+              "height": 440,
+              "customInputs": [],
+              "customOutputs": [],
+              "style": {
+                "objID": "e3a5bfc2-17ca-44e8-b618-033593001818",
+                "useStyle": "default",
+                "conditionalStyles": [],
+                "childStyles": []
+              },
+              "hiddenInEditor": false,
+              "timeline": [],
+              "eventHandlers": [],
+              "identifier": "setpoint_touch",
+              "leftUnit": "px",
+              "topUnit": "px",
+              "widthUnit": "px",
+              "heightUnit": "px",
+              "children": [],
+              "widgetFlags": "PRESS_LOCK",
+              "hiddenFlagType": "literal",
+              "clickableFlag": true,
+              "clickableFlagType": "literal",
+              "flagScrollbarMode": "",
+              "flagScrollDirection": "",
+              "scrollSnapX": "",
+              "scrollSnapY": "",
+              "checkedStateType": "literal",
+              "disabledStateType": "literal",
+              "states": "",
+              "useStyle": "arc_touch",
+              "localStyles": {
+                "objID": "5536ef9f-bf1a-4ae0-91af-6885280ede95"
+              },
+              "group": "",
+              "groupIndex": 0,
+              "useAngle": false,
+              "rangeMin": 85,
+              "rangeMinType": "literal",
+              "rangeMax": 100,
+              "rangeMaxType": "literal",
+              "value": "setpoint",
+              "valueType": "expression",
+              "previewValue": "93",
+              "mode": "NORMAL",
+              "startAngle": 135,
+              "startAngleType": "literal",
+              "previewStartAngle": "135",
+              "endAngle": 45,
+              "endAngleType": "literal",
+              "previewEndAngle": "45",
+              "bgStartAngle": 200,
+              "bgStartAngleType": "literal",
+              "previewBgStartAngle": "135",
+              "bgEndAngle": 340,
+              "bgEndAngleType": "literal",
+              "previewBgEndAngle": "45",
+              "rotation": 0,
+              "rotationType": "literal",
+              "previewRotation": "0"
             }
           ],
           "widgetFlags": "CLICKABLE|PRESS_LOCK|CLICK_FOCUSABLE|GESTURE_BUBBLE|SNAPPABLE|SCROLLABLE|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER",
@@ -3700,6 +3768,38 @@
                 "text_opa": 110,
                 "text_font": "MONTSERRAT_14",
                 "text_align": "CENTER"
+              }
+            }
+          }
+        }
+      },
+      {
+        "objID": "6ad04da5-c529-45e4-dbf0-feedc4a4384c",
+        "name": "arc_touch",
+        "forWidgetType": "LVGLArcWidget",
+        "childStyles": [],
+        "definition": {
+          "objID": "1e52c901-6b18-481d-84d8-2724d93fe060",
+          "definition": {
+            "MAIN": {
+              "DEFAULT": {
+                "arc_opa": 0,
+                "arc_width": 44
+              }
+            },
+            "INDICATOR": {
+              "DEFAULT": {
+                "arc_opa": 0,
+                "arc_width": 44
+              }
+            },
+            "KNOB": {
+              "DEFAULT": {
+                "bg_opa": 0,
+                "pad_all": 0,
+                "radius": 0,
+                "border_width": 0,
+                "shadow_width": 0
               }
             }
           }

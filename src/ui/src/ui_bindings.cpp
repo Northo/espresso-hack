@@ -16,6 +16,7 @@ static int32_t s_setpoint_angle_start = 200, s_setpoint_angle_end = 202;
 static bool s_have_state, s_chart_ready;
 static int16_t s_temperature_x10, s_setpoint_x10;
 static uint32_t s_chart_last_ms;
+static uint32_t s_setpoint_hold_until; // ignore controller setpoints until then (while dragging the marker)
 
 static char s_temperature_buf[16] = "--", s_setpoint_buf[16] = "--", s_brew_seconds_buf[16] = "--";
 static const char *s_temperature_text = s_temperature_buf, *s_setpoint_text = s_setpoint_buf,
@@ -101,7 +102,7 @@ void app_on_controller_state(const proto::StateMsg &st)
     s_setpoint_x10 = st.setpoint_x10;
     s_have_state = true;
     s_temperature = round_x10(st.temperature_x10);
-    s_setpoint = round_x10(st.setpoint_x10);
+    if ((int32_t)(millis() - s_setpoint_hold_until) >= 0) s_setpoint = round_x10(st.setpoint_x10);
     s_brew_seconds = st.brew_duration_s;
     refresh_texts();
 
@@ -127,14 +128,17 @@ void app_on_controller_state(const proto::StateMsg &st)
     }
 }
 
-static void change_setpoint(int32_t delta)
+static void set_setpoint(int32_t v)
 {
-    int32_t v = s_setpoint + delta;
-    if (v < SETPOINT_MIN || v > SETPOINT_MAX) return;
+    if (v < SETPOINT_MIN || v > SETPOINT_MAX || v == s_setpoint) return;
     s_setpoint = v; // optimistic; the controller's next state message confirms it
     refresh_texts();
     controller_link_send_command(proto::CMD_SET_SETPOINT, v * 10);
 }
+
+static void change_setpoint(int32_t delta) { set_setpoint(s_setpoint + delta); }
+
+// Dragging the (invisible) setpoint arc on Main ends up in set_var_setpoint(), see below.
 
 static void change_brew_time(int32_t delta)
 {
@@ -150,7 +154,14 @@ extern "C" {
 int32_t get_var_temperature() { return s_temperature; }
 void set_var_temperature(int32_t v) { s_temperature = v; }
 int32_t get_var_setpoint() { return s_setpoint; }
-void set_var_setpoint(int32_t v) { s_setpoint = v; }
+// Written by the Main screen's setpoint arc when the user drags it (it is a normal LVGL arc, made invisible,
+// laid over the wedge). Sends the new setpoint to the controller.
+void set_var_setpoint(int32_t v)
+{
+    if (s_steam_active) return; // the steam setpoint is fixed; the arc snaps back on the next tick
+    s_setpoint_hold_until = millis() + 1500; // don't let in-flight controller states undo the drag
+    set_setpoint(v);
+}
 int32_t get_var_brew_seconds() { return s_brew_seconds; }
 void set_var_brew_seconds(int32_t v) { s_brew_seconds = v; }
 

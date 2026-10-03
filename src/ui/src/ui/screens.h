@@ -31,6 +31,7 @@ typedef struct _objects_t {
     lv_obj_t *obj1;
     lv_obj_t *obj2;
     lv_obj_t *temp_ticks;
+    lv_obj_t *setpoint_touch;
     lv_obj_t *obj3;
     lv_obj_t *obj4;
     lv_obj_t *obj5;

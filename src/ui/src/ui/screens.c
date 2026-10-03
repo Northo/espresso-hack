@@ -81,6 +81,17 @@ static void event_handler_cb_main_obj2(lv_event_t *e) {
     }
 }
 
+static void event_handler_cb_main_setpoint_touch(lv_event_t *e) {
+    lv_event_code_t event = lv_event_get_code(e);
+    if (event == LV_EVENT_VALUE_CHANGED) {
+        lv_obj_t *ta = lv_event_get_target_obj(e);
+        if (tick_value_change_obj != ta) {
+            int32_t value = lv_arc_get_value(ta);
+            set_var_setpoint(value);
+        }
+    }
+}
+
 static void event_handler_cb_main_1_obj15(lv_event_t *e) {
     lv_event_code_t event = lv_event_get_code(e);
     if (event == LV_EVENT_VALUE_CHANGED) {
@@ -321,6 +332,20 @@ void create_screen_main() {
             lv_obj_set_style_arc_opa(obj, 0, LV_PART_MAIN);
             lv_obj_set_style_length(obj, 9, LV_PART_ITEMS);
             lv_obj_set_style_line_width(obj, 0, LV_PART_ITEMS);
+            lv_obj_set_style_length(obj, 2, LV_PART_INDICATOR);
+        }
+        {
+            // setpoint_touch
+            lv_obj_t *obj = lv_arc_create(parent_obj);
+            objects.setpoint_touch = obj;
+            lv_obj_set_pos(obj, 20, 20);
+            lv_obj_set_size(obj, 440, 440);
+            lv_arc_set_range(obj, 85, 100);
+            lv_arc_set_bg_start_angle(obj, 200);
+            lv_arc_set_bg_end_angle(obj, 340);
+            lv_obj_add_event_cb(obj, event_handler_cb_main_setpoint_touch, LV_EVENT_ALL, 0);
+            lv_obj_remove_flag(obj, LV_OBJ_FLAG_CLICK_FOCUSABLE|LV_OBJ_FLAG_GESTURE_BUBBLE|LV_OBJ_FLAG_SCROLL_ELASTIC|LV_OBJ_FLAG_SCROLL_MOMENTUM|LV_OBJ_FLAG_SCROLL_WITH_ARROW|LV_OBJ_FLAG_SNAPPABLE);
+            add_style_arc_touch(obj);
         }
     }
     
@@ -459,6 +484,15 @@ void tick_screen_main() {
             } else {
                 lv_obj_remove_state(objects.obj2, LV_STATE_CHECKED);
             }
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        int32_t new_val = get_var_setpoint();
+        int32_t cur_val = lv_arc_get_value(objects.setpoint_touch);
+        if (new_val != cur_val) {
+            tick_value_change_obj = objects.setpoint_touch;
+            lv_arc_set_value(objects.setpoint_touch, new_val);
             tick_value_change_obj = NULL;
         }
     }

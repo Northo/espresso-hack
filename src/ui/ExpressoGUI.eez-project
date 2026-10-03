@@ -1307,7 +1307,8 @@
               "mainArcOpacity": 0,
               "mainArcRounded": false,
               "minorTicksLength": 9,
-              "minorTicksWidth": 0
+              "minorTicksWidth": 0,
+              "majorTicksLength": 2
             },
             {
               "objID": "828e35fc-d346-45ac-b526-eee40534da61",

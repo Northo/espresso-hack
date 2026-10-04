@@ -48,6 +48,8 @@ struct __attribute__((packed)) StateMsg {
     uint8_t brew_stage;       // BrewStage
     uint8_t clean_state;      // CleanState
     uint8_t clean_cycle;      // current cycle, 1..CLEAN_CYCLES (0 when idle)
+    uint8_t preinfusion_s;    // configured duration of the preinfusion stage (brew_elapsed_s counts from its start)
+    uint8_t bloom_s;          // configured duration of the bloom stage
 };
 
 enum CommandId : uint8_t {

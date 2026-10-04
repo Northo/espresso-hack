@@ -132,6 +132,8 @@ static void sendState(const MachineState &state) {
     msg.temperature_x10 = (int16_t)lround(state.current_temperature * 10);
     msg.setpoint_x10 = (int16_t)lround(state.target_temperature * 10);
     msg.brew_duration_s = (uint16_t)(state.auto_brew_duration / 1000);
+    msg.preinfusion_s = (uint8_t)min(255L, state.auto_brew_preinfusion_duration / 1000);
+    msg.bloom_s = (uint8_t)min(255L, state.auto_brew_bloom_duration / 1000);
     msg.flags = (state.auto_brew_enabled ? proto::FLAG_BREWING : 0) |
                 (state.mode == ControlMode::BANG_BANG ? proto::FLAG_STEAM : 0) |
                 (state.brew_hold ? proto::FLAG_HOLD : 0) |

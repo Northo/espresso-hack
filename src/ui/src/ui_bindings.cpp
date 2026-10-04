@@ -102,14 +102,32 @@ void app_on_controller_state(const proto::StateMsg &st)
 
     update_clean_texts(st);
 
-    const char *stage = nullptr;
-    switch (st.brew_stage) {
-    case proto::STAGE_PREINFUSION: stage = "PREINFUSE"; break;
-    case proto::STAGE_BLOOM: stage = "BLOOM"; break;
-    case proto::STAGE_BREWING: stage = "BREW"; break;
-    }
-    if (s_brewing && stage) {
-        snprintf(s_brew_status_buf, sizeof(s_brew_status_buf), "%s %us", stage, (unsigned)st.brew_elapsed_s);
+    // Brew status: while brewing, "STAGE <seconds left in this stage>" (or "BREW +Ns HOLD" once a hold runs
+    // past the main stage); when idle, the plan, e.g. "2 + 5 + 30 s".
+    const unsigned pre = st.preinfusion_s, bloom = st.bloom_s, brew = st.brew_duration_s;
+    const unsigned el = st.brew_elapsed_s;
+    if (s_brewing && st.brew_stage != proto::STAGE_NONE) {
+        const char *stage = "BREW";
+        unsigned end = pre + bloom + brew;
+        if (st.brew_stage == proto::STAGE_PREINFUSION) { stage = "PREINFUSE"; end = pre; }
+        else if (st.brew_stage == proto::STAGE_BLOOM) { stage = "BLOOM"; end = pre + bloom; }
+        if (el < end) {
+            snprintf(s_brew_status_buf, sizeof(s_brew_status_buf), "%s %us", stage, end - el);
+        } else {
+            snprintf(s_brew_status_buf, sizeof(s_brew_status_buf), "%s +%us HOLD", stage, el - end);
+        }
+    } else if (!s_brewing) {
+        char *p = s_brew_status_buf;
+        char *const e = s_brew_status_buf + sizeof(s_brew_status_buf);
+        const unsigned parts[3] = {pre, bloom, brew};
+        bool first = true;
+        for (unsigned v : parts) {
+            if (v == 0) continue;
+            p += snprintf(p, e - p, first ? "%u" : " + %u", v);
+            first = false;
+        }
+        if (first) s_brew_status_buf[0] = '\0';
+        else snprintf(p, e - p, " s");
     } else {
         s_brew_status_buf[0] = '\0';
     }

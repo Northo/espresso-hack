@@ -62,6 +62,8 @@ enum CommandId : uint8_t {
     CMD_CLEAN_START = 7,       // start the cleaning sequence (ignored if brewing/cleaning)
     CMD_CLEAN_CANCEL = 8,      // abort cleaning, or acknowledge CLEAN_DONE
     CMD_CLEAN_CONTINUE = 9,    // proceed from CLEAN_WAIT_REMOVE to the water cycles
+    CMD_SET_PREINFUSION_DURATION = 10, // value: seconds (0 = skip the stage)
+    CMD_SET_BLOOM_DURATION = 11,       // value: seconds (0 = skip the stage)
 };
 
 struct __attribute__((packed)) CommandMsg {

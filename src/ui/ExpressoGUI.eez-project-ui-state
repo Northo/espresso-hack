@@ -1,6 +1,6 @@
 {
   "navigation": {
-    "selectedUserPageObject": "[ExpressoGUI.eez-project]:/userPages/0",
+    "selectedUserPageObject": "[ExpressoGUI.eez-project]:/userPages/1",
     "selectedGlobalVariableObject": "[ExpressoGUI.eez-project]:/variables/globalVariables/3",
     "selectedStyleObject": "[ExpressoGUI.eez-project]:/lvglStyles/styles/2",
     "subnavigationSelectedItems": {
@@ -125,10 +125,10 @@
                 {
                   "type": "tab",
                   "id": "#4b59aa0f-4478-4803-8070-56648b1aae24",
-                  "name": "Main",
+                  "name": "Settings",
                   "component": "editor",
                   "config": {
-                    "objectPath": "[ExpressoGUI.eez-project]:/userPages/0",
+                    "objectPath": "[ExpressoGUI.eez-project]:/userPages/1",
                     "permanent": false
                   },
                   "icon": "svg:page"
@@ -1001,8 +1001,7 @@
           "5": {},
           "6": {},
           "7": {},
-          "8": {},
-          "12": {}
+          "8": {}
         },
         "$selected": true
       },
@@ -1024,17 +1023,16 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
-          "2": {
-            "$selected": true
-          }
-        }
+          "2": {}
+        },
+        "$selected": true
       },
       "transform": {
         "translate": {
           "x": -240,
           "y": -240
         },
-        "scale": 1
+        "scale": 1.25
       },
       "timeline": {
         "isEditorActive": false,

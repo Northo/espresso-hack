@@ -92,7 +92,7 @@ static void event_handler_cb_main_obj3(lv_event_t *e) {
     }
 }
 
-static void event_handler_cb_main_1_obj16(lv_event_t *e) {
+static void event_handler_cb_main_1_obj18(lv_event_t *e) {
     lv_event_code_t event = lv_event_get_code(e);
     if (event == LV_EVENT_VALUE_CHANGED) {
         lv_obj_t *ta = lv_event_get_target_obj(e);
@@ -103,7 +103,7 @@ static void event_handler_cb_main_1_obj16(lv_event_t *e) {
     }
 }
 
-static void event_handler_cb_main_1_obj17(lv_event_t *e) {
+static void event_handler_cb_main_1_obj19(lv_event_t *e) {
     lv_event_code_t event = lv_event_get_code(e);
     if (event == LV_EVENT_VALUE_CHANGED) {
         lv_obj_t *ta = lv_event_get_target_obj(e);
@@ -114,7 +114,7 @@ static void event_handler_cb_main_1_obj17(lv_event_t *e) {
     }
 }
 
-static void event_handler_cb_main_1_obj18(lv_event_t *e) {
+static void event_handler_cb_main_1_obj20(lv_event_t *e) {
     lv_event_code_t event = lv_event_get_code(e);
     if (event == LV_EVENT_VALUE_CHANGED) {
         lv_obj_t *ta = lv_event_get_target_obj(e);
@@ -488,38 +488,23 @@ void create_screen_settings() {
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
-            lv_obj_set_pos(obj, 100, 100);
-            lv_obj_set_size(obj, 280, 30);
+            lv_obj_set_pos(obj, 56, 103);
+            lv_obj_set_size(obj, 130, 30);
             add_style_lbl_small(obj);
-            lv_label_set_text_static(obj, "Temperature setpoint");
+            lv_label_set_text_static(obj, "Temp");
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.obj8 = obj;
-            lv_obj_set_pos(obj, 180, 152);
-            lv_obj_set_size(obj, 120, 40);
-            add_style_lbl_value(obj);
-            lv_label_set_text(obj, "");
-        }
-        {
-            lv_obj_t *obj = lv_label_create(parent_obj);
-            lv_obj_set_pos(obj, 100, 225);
-            lv_obj_set_size(obj, 280, 30);
-            add_style_lbl_small(obj);
-            lv_label_set_text_static(obj, "Brew duration");
-        }
-        {
-            lv_obj_t *obj = lv_label_create(parent_obj);
-            objects.obj9 = obj;
-            lv_obj_set_pos(obj, 180, 277);
-            lv_obj_set_size(obj, 120, 40);
+            lv_obj_set_pos(obj, 244, 98);
+            lv_obj_set_size(obj, 102, 40);
             add_style_lbl_value(obj);
             lv_label_set_text(obj, "");
         }
         {
             lv_obj_t *obj = lv_button_create(parent_obj);
-            lv_obj_set_pos(obj, 100, 144);
-            lv_obj_set_size(obj, 64, 56);
+            lv_obj_set_pos(obj, 188, 92);
+            lv_obj_set_size(obj, 56, 52);
             lv_obj_add_event_cb(obj, action_setpoint_dec, LV_EVENT_CLICKED, (void *)0);
             add_style_btn_round(obj);
             {
@@ -535,8 +520,8 @@ void create_screen_settings() {
         }
         {
             lv_obj_t *obj = lv_button_create(parent_obj);
-            lv_obj_set_pos(obj, 316, 144);
-            lv_obj_set_size(obj, 64, 56);
+            lv_obj_set_pos(obj, 346, 92);
+            lv_obj_set_size(obj, 56, 52);
             lv_obj_add_event_cb(obj, action_setpoint_inc, LV_EVENT_CLICKED, (void *)0);
             add_style_btn_round(obj);
             {
@@ -551,9 +536,122 @@ void create_screen_settings() {
             }
         }
         {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            lv_obj_set_pos(obj, 56, 165);
+            lv_obj_set_size(obj, 130, 30);
+            add_style_lbl_small(obj);
+            lv_label_set_text_static(obj, "Preinfuse");
+        }
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            objects.obj9 = obj;
+            lv_obj_set_pos(obj, 244, 160);
+            lv_obj_set_size(obj, 102, 40);
+            add_style_lbl_value(obj);
+            lv_label_set_text(obj, "");
+        }
+        {
             lv_obj_t *obj = lv_button_create(parent_obj);
-            lv_obj_set_pos(obj, 100, 269);
-            lv_obj_set_size(obj, 64, 56);
+            lv_obj_set_pos(obj, 188, 154);
+            lv_obj_set_size(obj, 56, 52);
+            lv_obj_add_event_cb(obj, action_preinfusion_dec, LV_EVENT_CLICKED, (void *)0);
+            add_style_btn_round(obj);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    lv_obj_set_pos(obj, 0, 0);
+                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+                    lv_obj_set_style_align(obj, LV_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text_static(obj, "-");
+                }
+            }
+        }
+        {
+            lv_obj_t *obj = lv_button_create(parent_obj);
+            lv_obj_set_pos(obj, 346, 154);
+            lv_obj_set_size(obj, 56, 52);
+            lv_obj_add_event_cb(obj, action_preinfusion_inc, LV_EVENT_CLICKED, (void *)0);
+            add_style_btn_round(obj);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    lv_obj_set_pos(obj, 0, 0);
+                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+                    lv_obj_set_style_align(obj, LV_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text_static(obj, "+");
+                }
+            }
+        }
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            lv_obj_set_pos(obj, 56, 227);
+            lv_obj_set_size(obj, 130, 30);
+            add_style_lbl_small(obj);
+            lv_label_set_text_static(obj, "Bloom");
+        }
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            objects.obj10 = obj;
+            lv_obj_set_pos(obj, 244, 222);
+            lv_obj_set_size(obj, 102, 40);
+            add_style_lbl_value(obj);
+            lv_label_set_text(obj, "");
+        }
+        {
+            lv_obj_t *obj = lv_button_create(parent_obj);
+            lv_obj_set_pos(obj, 188, 216);
+            lv_obj_set_size(obj, 56, 52);
+            lv_obj_add_event_cb(obj, action_bloom_dec, LV_EVENT_CLICKED, (void *)0);
+            add_style_btn_round(obj);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    lv_obj_set_pos(obj, 0, 0);
+                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+                    lv_obj_set_style_align(obj, LV_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text_static(obj, "-");
+                }
+            }
+        }
+        {
+            lv_obj_t *obj = lv_button_create(parent_obj);
+            lv_obj_set_pos(obj, 346, 216);
+            lv_obj_set_size(obj, 56, 52);
+            lv_obj_add_event_cb(obj, action_bloom_inc, LV_EVENT_CLICKED, (void *)0);
+            add_style_btn_round(obj);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    lv_obj_set_pos(obj, 0, 0);
+                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+                    lv_obj_set_style_align(obj, LV_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text_static(obj, "+");
+                }
+            }
+        }
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            lv_obj_set_pos(obj, 56, 289);
+            lv_obj_set_size(obj, 130, 30);
+            add_style_lbl_small(obj);
+            lv_label_set_text_static(obj, "Brew");
+        }
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            objects.obj11 = obj;
+            lv_obj_set_pos(obj, 244, 284);
+            lv_obj_set_size(obj, 102, 40);
+            add_style_lbl_value(obj);
+            lv_label_set_text(obj, "");
+        }
+        {
+            lv_obj_t *obj = lv_button_create(parent_obj);
+            lv_obj_set_pos(obj, 188, 278);
+            lv_obj_set_size(obj, 56, 52);
             lv_obj_add_event_cb(obj, action_brew_time_dec, LV_EVENT_CLICKED, (void *)0);
             add_style_btn_round(obj);
             {
@@ -569,8 +667,8 @@ void create_screen_settings() {
         }
         {
             lv_obj_t *obj = lv_button_create(parent_obj);
-            lv_obj_set_pos(obj, 316, 269);
-            lv_obj_set_size(obj, 64, 56);
+            lv_obj_set_pos(obj, 346, 278);
+            lv_obj_set_size(obj, 56, 52);
             lv_obj_add_event_cb(obj, action_brew_time_inc, LV_EVENT_CLICKED, (void *)0);
             add_style_btn_round(obj);
             {
@@ -587,7 +685,7 @@ void create_screen_settings() {
         {
             lv_obj_t *obj = lv_button_create(parent_obj);
             lv_obj_set_pos(obj, 170, 350);
-            lv_obj_set_size(obj, 140, 56);
+            lv_obj_set_size(obj, 140, 52);
             lv_obj_add_event_cb(obj, action_open_clean, LV_EVENT_CLICKED, (void *)0);
             add_style_btn_hold(obj);
             {
@@ -617,11 +715,29 @@ void tick_screen_settings() {
         }
     }
     {
-        const char *new_val = get_var_brew_seconds_text();
+        const char *new_val = get_var_preinfusion_seconds_text();
         const char *cur_val = lv_label_get_text(objects.obj9);
         if (strcmp(new_val, cur_val) != 0) {
             tick_value_change_obj = objects.obj9;
             lv_label_set_text(objects.obj9, new_val);
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        const char *new_val = get_var_bloom_seconds_text();
+        const char *cur_val = lv_label_get_text(objects.obj10);
+        if (strcmp(new_val, cur_val) != 0) {
+            tick_value_change_obj = objects.obj10;
+            lv_label_set_text(objects.obj10, new_val);
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        const char *new_val = get_var_brew_seconds_text();
+        const char *cur_val = lv_label_get_text(objects.obj11);
+        if (strcmp(new_val, cur_val) != 0) {
+            tick_value_change_obj = objects.obj11;
+            lv_label_set_text(objects.obj11, new_val);
             tick_value_change_obj = NULL;
         }
     }
@@ -639,7 +755,7 @@ void create_screen_clean() {
         lv_obj_t *parent_obj = obj;
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
-            objects.obj10 = obj;
+            objects.obj12 = obj;
             lv_obj_set_pos(obj, 90, 70);
             lv_obj_set_size(obj, 300, 40);
             add_style_lbl_value(obj);
@@ -647,7 +763,7 @@ void create_screen_clean() {
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
-            objects.obj11 = obj;
+            objects.obj13 = obj;
             lv_obj_set_pos(obj, 90, 130);
             lv_obj_set_size(obj, 300, 150);
             add_style_lbl_small(obj);
@@ -655,7 +771,7 @@ void create_screen_clean() {
         }
         {
             lv_obj_t *obj = lv_button_create(parent_obj);
-            objects.obj12 = obj;
+            objects.obj14 = obj;
             lv_obj_set_pos(obj, 80, 320);
             lv_obj_set_size(obj, 140, 64);
             lv_obj_add_event_cb(obj, action_clean_primary, LV_EVENT_CLICKED, (void *)0);
@@ -664,7 +780,7 @@ void create_screen_clean() {
                 lv_obj_t *parent_obj = obj;
                 {
                     lv_obj_t *obj = lv_label_create(parent_obj);
-                    objects.obj13 = obj;
+                    objects.obj15 = obj;
                     lv_obj_set_pos(obj, 0, 0);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     lv_obj_set_style_align(obj, LV_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -674,7 +790,7 @@ void create_screen_clean() {
         }
         {
             lv_obj_t *obj = lv_button_create(parent_obj);
-            objects.obj14 = obj;
+            objects.obj16 = obj;
             lv_obj_set_pos(obj, 260, 320);
             lv_obj_set_size(obj, 140, 64);
             lv_obj_add_event_cb(obj, action_clean_secondary, LV_EVENT_CLICKED, (void *)0);
@@ -683,7 +799,7 @@ void create_screen_clean() {
                 lv_obj_t *parent_obj = obj;
                 {
                     lv_obj_t *obj = lv_label_create(parent_obj);
-                    objects.obj15 = obj;
+                    objects.obj17 = obj;
                     lv_obj_set_pos(obj, 0, 0);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     lv_obj_set_style_align(obj, LV_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -699,37 +815,15 @@ void create_screen_clean() {
 void tick_screen_clean() {
     {
         const char *new_val = get_var_clean_title_text();
-        const char *cur_val = lv_label_get_text(objects.obj10);
+        const char *cur_val = lv_label_get_text(objects.obj12);
         if (strcmp(new_val, cur_val) != 0) {
-            tick_value_change_obj = objects.obj10;
-            lv_label_set_text(objects.obj10, new_val);
+            tick_value_change_obj = objects.obj12;
+            lv_label_set_text(objects.obj12, new_val);
             tick_value_change_obj = NULL;
         }
     }
     {
         const char *new_val = get_var_clean_detail_text();
-        const char *cur_val = lv_label_get_text(objects.obj11);
-        if (strcmp(new_val, cur_val) != 0) {
-            tick_value_change_obj = objects.obj11;
-            lv_label_set_text(objects.obj11, new_val);
-            tick_value_change_obj = NULL;
-        }
-    }
-    {
-        bool new_val = get_var_clean_running();
-        bool cur_val = lv_obj_has_flag(objects.obj12, LV_OBJ_FLAG_HIDDEN);
-        if (new_val != cur_val) {
-            tick_value_change_obj = objects.obj12;
-            if (new_val) {
-                lv_obj_add_flag(objects.obj12, LV_OBJ_FLAG_HIDDEN);
-            } else {
-                lv_obj_remove_flag(objects.obj12, LV_OBJ_FLAG_HIDDEN);
-            }
-            tick_value_change_obj = NULL;
-        }
-    }
-    {
-        const char *new_val = get_var_clean_primary_text();
         const char *cur_val = lv_label_get_text(objects.obj13);
         if (strcmp(new_val, cur_val) != 0) {
             tick_value_change_obj = objects.obj13;
@@ -738,7 +832,7 @@ void tick_screen_clean() {
         }
     }
     {
-        bool new_val = get_var_clean_done();
+        bool new_val = get_var_clean_running();
         bool cur_val = lv_obj_has_flag(objects.obj14, LV_OBJ_FLAG_HIDDEN);
         if (new_val != cur_val) {
             tick_value_change_obj = objects.obj14;
@@ -751,11 +845,33 @@ void tick_screen_clean() {
         }
     }
     {
-        const char *new_val = get_var_clean_secondary_text();
+        const char *new_val = get_var_clean_primary_text();
         const char *cur_val = lv_label_get_text(objects.obj15);
         if (strcmp(new_val, cur_val) != 0) {
             tick_value_change_obj = objects.obj15;
             lv_label_set_text(objects.obj15, new_val);
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        bool new_val = get_var_clean_done();
+        bool cur_val = lv_obj_has_flag(objects.obj16, LV_OBJ_FLAG_HIDDEN);
+        if (new_val != cur_val) {
+            tick_value_change_obj = objects.obj16;
+            if (new_val) {
+                lv_obj_add_flag(objects.obj16, LV_OBJ_FLAG_HIDDEN);
+            } else {
+                lv_obj_remove_flag(objects.obj16, LV_OBJ_FLAG_HIDDEN);
+            }
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        const char *new_val = get_var_clean_secondary_text();
+        const char *cur_val = lv_label_get_text(objects.obj17);
+        if (strcmp(new_val, cur_val) != 0) {
+            tick_value_change_obj = objects.obj17;
+            lv_label_set_text(objects.obj17, new_val);
             tick_value_change_obj = NULL;
         }
     }
@@ -829,7 +945,7 @@ void create_screen_main_1() {
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
-            objects.obj19 = obj;
+            objects.obj21 = obj;
             lv_obj_set_pos(obj, 140, 110);
             lv_obj_set_size(obj, 200, 60);
             add_style_lbl_temp(obj);
@@ -837,7 +953,7 @@ void create_screen_main_1() {
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
-            objects.obj20 = obj;
+            objects.obj22 = obj;
             lv_obj_set_pos(obj, 120, 230);
             lv_obj_set_size(obj, 240, 30);
             add_style_lbl_small(obj);
@@ -845,17 +961,17 @@ void create_screen_main_1() {
         }
         {
             lv_obj_t *obj = lv_button_create(parent_obj);
-            objects.obj16 = obj;
+            objects.obj18 = obj;
             lv_obj_set_pos(obj, 80, 320);
             lv_obj_set_size(obj, 140, 64);
             lv_obj_add_event_cb(obj, action_brew_start, LV_EVENT_CLICKED, (void *)0);
-            lv_obj_add_event_cb(obj, event_handler_cb_main_1_obj16, LV_EVENT_ALL, 0);
+            lv_obj_add_event_cb(obj, event_handler_cb_main_1_obj18, LV_EVENT_ALL, 0);
             add_style_btn_brew(obj);
             {
                 lv_obj_t *parent_obj = obj;
                 {
                     lv_obj_t *obj = lv_label_create(parent_obj);
-                    objects.obj21 = obj;
+                    objects.obj23 = obj;
                     lv_obj_set_pos(obj, 0, 0);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     lv_obj_set_style_align(obj, LV_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -865,11 +981,11 @@ void create_screen_main_1() {
         }
         {
             lv_obj_t *obj = lv_button_create(parent_obj);
-            objects.obj17 = obj;
+            objects.obj19 = obj;
             lv_obj_set_pos(obj, 260, 320);
             lv_obj_set_size(obj, 140, 64);
             lv_obj_add_event_cb(obj, action_steam_toggle, LV_EVENT_CLICKED, (void *)0);
-            lv_obj_add_event_cb(obj, event_handler_cb_main_1_obj17, LV_EVENT_ALL, 0);
+            lv_obj_add_event_cb(obj, event_handler_cb_main_1_obj19, LV_EVENT_ALL, 0);
             add_style_btn_steam(obj);
             {
                 lv_obj_t *parent_obj = obj;
@@ -884,11 +1000,11 @@ void create_screen_main_1() {
         }
         {
             lv_obj_t *obj = lv_button_create(parent_obj);
-            objects.obj18 = obj;
+            objects.obj20 = obj;
             lv_obj_set_pos(obj, 260, 320);
             lv_obj_set_size(obj, 140, 64);
             lv_obj_add_event_cb(obj, action_brew_hold_toggle, LV_EVENT_CLICKED, (void *)0);
-            lv_obj_add_event_cb(obj, event_handler_cb_main_1_obj18, LV_EVENT_ALL, 0);
+            lv_obj_add_event_cb(obj, event_handler_cb_main_1_obj20, LV_EVENT_ALL, 0);
             add_style_btn_hold(obj);
             {
                 lv_obj_t *parent_obj = obj;
@@ -930,37 +1046,6 @@ void tick_screen_main_1() {
     (void)state;
     {
         const char *new_val = get_var_temperature_text();
-        const char *cur_val = lv_label_get_text(objects.obj19);
-        if (strcmp(new_val, cur_val) != 0) {
-            tick_value_change_obj = objects.obj19;
-            lv_label_set_text(objects.obj19, new_val);
-            tick_value_change_obj = NULL;
-        }
-    }
-    {
-        const char *new_val = get_var_brew_status_text();
-        const char *cur_val = lv_label_get_text(objects.obj20);
-        if (strcmp(new_val, cur_val) != 0) {
-            tick_value_change_obj = objects.obj20;
-            lv_label_set_text(objects.obj20, new_val);
-            tick_value_change_obj = NULL;
-        }
-    }
-    {
-        bool new_val = get_var_brewing();
-        bool cur_val = lv_obj_has_state(objects.obj16, LV_STATE_CHECKED);
-        if (new_val != cur_val) {
-            tick_value_change_obj = objects.obj16;
-            if (new_val) {
-                lv_obj_add_state(objects.obj16, LV_STATE_CHECKED);
-            } else {
-                lv_obj_remove_state(objects.obj16, LV_STATE_CHECKED);
-            }
-            tick_value_change_obj = NULL;
-        }
-    }
-    {
-        const char *new_val = get_var_brew_button_text();
         const char *cur_val = lv_label_get_text(objects.obj21);
         if (strcmp(new_val, cur_val) != 0) {
             tick_value_change_obj = objects.obj21;
@@ -969,46 +1054,16 @@ void tick_screen_main_1() {
         }
     }
     {
+        const char *new_val = get_var_brew_status_text();
+        const char *cur_val = lv_label_get_text(objects.obj22);
+        if (strcmp(new_val, cur_val) != 0) {
+            tick_value_change_obj = objects.obj22;
+            lv_label_set_text(objects.obj22, new_val);
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
         bool new_val = get_var_brewing();
-        bool cur_val = lv_obj_has_flag(objects.obj17, LV_OBJ_FLAG_HIDDEN);
-        if (new_val != cur_val) {
-            tick_value_change_obj = objects.obj17;
-            if (new_val) {
-                lv_obj_add_flag(objects.obj17, LV_OBJ_FLAG_HIDDEN);
-            } else {
-                lv_obj_remove_flag(objects.obj17, LV_OBJ_FLAG_HIDDEN);
-            }
-            tick_value_change_obj = NULL;
-        }
-    }
-    {
-        bool new_val = get_var_steam_active();
-        bool cur_val = lv_obj_has_state(objects.obj17, LV_STATE_CHECKED);
-        if (new_val != cur_val) {
-            tick_value_change_obj = objects.obj17;
-            if (new_val) {
-                lv_obj_add_state(objects.obj17, LV_STATE_CHECKED);
-            } else {
-                lv_obj_remove_state(objects.obj17, LV_STATE_CHECKED);
-            }
-            tick_value_change_obj = NULL;
-        }
-    }
-    {
-        bool new_val = get_var_brew_idle();
-        bool cur_val = lv_obj_has_flag(objects.obj18, LV_OBJ_FLAG_HIDDEN);
-        if (new_val != cur_val) {
-            tick_value_change_obj = objects.obj18;
-            if (new_val) {
-                lv_obj_add_flag(objects.obj18, LV_OBJ_FLAG_HIDDEN);
-            } else {
-                lv_obj_remove_flag(objects.obj18, LV_OBJ_FLAG_HIDDEN);
-            }
-            tick_value_change_obj = NULL;
-        }
-    }
-    {
-        bool new_val = get_var_brew_hold();
         bool cur_val = lv_obj_has_state(objects.obj18, LV_STATE_CHECKED);
         if (new_val != cur_val) {
             tick_value_change_obj = objects.obj18;
@@ -1016,6 +1071,67 @@ void tick_screen_main_1() {
                 lv_obj_add_state(objects.obj18, LV_STATE_CHECKED);
             } else {
                 lv_obj_remove_state(objects.obj18, LV_STATE_CHECKED);
+            }
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        const char *new_val = get_var_brew_button_text();
+        const char *cur_val = lv_label_get_text(objects.obj23);
+        if (strcmp(new_val, cur_val) != 0) {
+            tick_value_change_obj = objects.obj23;
+            lv_label_set_text(objects.obj23, new_val);
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        bool new_val = get_var_brewing();
+        bool cur_val = lv_obj_has_flag(objects.obj19, LV_OBJ_FLAG_HIDDEN);
+        if (new_val != cur_val) {
+            tick_value_change_obj = objects.obj19;
+            if (new_val) {
+                lv_obj_add_flag(objects.obj19, LV_OBJ_FLAG_HIDDEN);
+            } else {
+                lv_obj_remove_flag(objects.obj19, LV_OBJ_FLAG_HIDDEN);
+            }
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        bool new_val = get_var_steam_active();
+        bool cur_val = lv_obj_has_state(objects.obj19, LV_STATE_CHECKED);
+        if (new_val != cur_val) {
+            tick_value_change_obj = objects.obj19;
+            if (new_val) {
+                lv_obj_add_state(objects.obj19, LV_STATE_CHECKED);
+            } else {
+                lv_obj_remove_state(objects.obj19, LV_STATE_CHECKED);
+            }
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        bool new_val = get_var_brew_idle();
+        bool cur_val = lv_obj_has_flag(objects.obj20, LV_OBJ_FLAG_HIDDEN);
+        if (new_val != cur_val) {
+            tick_value_change_obj = objects.obj20;
+            if (new_val) {
+                lv_obj_add_flag(objects.obj20, LV_OBJ_FLAG_HIDDEN);
+            } else {
+                lv_obj_remove_flag(objects.obj20, LV_OBJ_FLAG_HIDDEN);
+            }
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        bool new_val = get_var_brew_hold();
+        bool cur_val = lv_obj_has_state(objects.obj20, LV_STATE_CHECKED);
+        if (new_val != cur_val) {
+            tick_value_change_obj = objects.obj20;
+            if (new_val) {
+                lv_obj_add_state(objects.obj20, LV_STATE_CHECKED);
+            } else {
+                lv_obj_remove_state(objects.obj20, LV_STATE_CHECKED);
             }
             tick_value_change_obj = NULL;
         }
@@ -1043,7 +1159,7 @@ void create_screen_chart() {
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
-            objects.obj22 = obj;
+            objects.obj24 = obj;
             lv_obj_set_pos(obj, 180, 55);
             lv_obj_set_size(obj, 120, 40);
             add_style_lbl_value(obj);
@@ -1101,10 +1217,10 @@ void tick_screen_chart() {
     (void)state;
     {
         const char *new_val = get_var_temperature_text();
-        const char *cur_val = lv_label_get_text(objects.obj22);
+        const char *cur_val = lv_label_get_text(objects.obj24);
         if (strcmp(new_val, cur_val) != 0) {
-            tick_value_change_obj = objects.obj22;
-            lv_label_set_text(objects.obj22, new_val);
+            tick_value_change_obj = objects.obj24;
+            lv_label_set_text(objects.obj24, new_val);
             tick_value_change_obj = NULL;
         }
     }

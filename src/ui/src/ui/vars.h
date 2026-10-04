@@ -58,6 +58,14 @@ extern int32_t get_var_temperature_x10();
 extern void set_var_temperature_x10(int32_t value);
 extern bool get_var_temp_below_range();
 extern void set_var_temp_below_range(bool value);
+extern int32_t get_var_preinfusion_seconds();
+extern void set_var_preinfusion_seconds(int32_t value);
+extern const char *get_var_preinfusion_seconds_text();
+extern void set_var_preinfusion_seconds_text(const char *value);
+extern int32_t get_var_bloom_seconds();
+extern void set_var_bloom_seconds(int32_t value);
+extern const char *get_var_bloom_seconds_text();
+extern void set_var_bloom_seconds_text(const char *value);
 
 #ifdef __cplusplus
 }

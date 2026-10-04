@@ -107,6 +107,14 @@ static void applyCommand(MachineState &state, const proto::CommandMsg &cmd) {
     case proto::CMD_SET_BREW_DURATION:
         if (cmd.value > 0) state.auto_brew_duration = (long)cmd.value * 1000;
         break;
+
+    case proto::CMD_SET_PREINFUSION_DURATION:
+        if (cmd.value >= 0 && cmd.value <= 255) state.auto_brew_preinfusion_duration = (long)cmd.value * 1000;
+        break;
+
+    case proto::CMD_SET_BLOOM_DURATION:
+        if (cmd.value >= 0 && cmd.value <= 255) state.auto_brew_bloom_duration = (long)cmd.value * 1000;
+        break;
     }
 }
 

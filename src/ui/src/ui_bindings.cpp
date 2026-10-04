@@ -8,16 +8,18 @@
 #include <Arduino.h>
 #include <stdio.h>
 
-static int32_t s_temperature, s_setpoint, s_brew_seconds;
+static int32_t s_temperature, s_setpoint, s_brew_seconds, s_preinfusion_seconds, s_bloom_seconds;
 // Latest raw controller values (0.1 °C) feeding the history chart.
 static bool s_have_state, s_chart_ready;
 static int16_t s_temperature_x10, s_setpoint_x10;
 static uint32_t s_chart_last_ms;
 static uint32_t s_setpoint_hold_until; // ignore controller setpoints until then (while dragging the knob)
 
-static char s_temperature_buf[16] = "--", s_setpoint_buf[16] = "--", s_brew_seconds_buf[16] = "--";
+static char s_temperature_buf[16] = "--", s_setpoint_buf[16] = "--", s_brew_seconds_buf[16] = "--",
+                  s_preinfusion_seconds_buf[16] = "--", s_bloom_seconds_buf[16] = "--";
 static const char *s_temperature_text = s_temperature_buf, *s_setpoint_text = s_setpoint_buf,
-                  *s_brew_seconds_text = s_brew_seconds_buf;
+                  *s_brew_seconds_text = s_brew_seconds_buf,
+                  *s_preinfusion_seconds_text = s_preinfusion_seconds_buf, *s_bloom_seconds_text = s_bloom_seconds_buf;
 
 static bool s_steam_active, s_brewing, s_brew_hold, s_brew_idle = true;
 static char s_brew_button_buf[8] = "BREW", s_brew_status_buf[32] = "";
@@ -33,12 +35,15 @@ static const char *s_clean_title_text = s_clean_title_buf, *s_clean_detail_text 
 
 static constexpr int32_t SETPOINT_MIN = 20, SETPOINT_MAX = 160; // matches the arc range
 static constexpr int32_t BREW_MIN = 1, BREW_MAX = 120;
+static constexpr int32_t STAGE_MIN = 0, STAGE_MAX = 30; // preinfusion / bloom, seconds (0 skips the stage)
 
 static void refresh_texts()
 {
     snprintf(s_temperature_buf, sizeof(s_temperature_buf), "%ld\xC2\xB0" "C", (long)s_temperature);
     snprintf(s_setpoint_buf, sizeof(s_setpoint_buf), "%ld\xC2\xB0" "C", (long)s_setpoint);
     snprintf(s_brew_seconds_buf, sizeof(s_brew_seconds_buf), "%lds", (long)s_brew_seconds);
+    snprintf(s_preinfusion_seconds_buf, sizeof(s_preinfusion_seconds_buf), "%lds", (long)s_preinfusion_seconds);
+    snprintf(s_bloom_seconds_buf, sizeof(s_bloom_seconds_buf), "%lds", (long)s_bloom_seconds);
 }
 
 static void update_clean_texts(const proto::StateMsg &st)
@@ -91,6 +96,8 @@ void app_on_controller_state(const proto::StateMsg &st)
     s_temperature = round_x10(st.temperature_x10);
     if ((int32_t)(millis() - s_setpoint_hold_until) >= 0) s_setpoint = round_x10(st.setpoint_x10);
     s_brew_seconds = st.brew_duration_s;
+    s_preinfusion_seconds = st.preinfusion_s;
+    s_bloom_seconds = st.bloom_s;
     refresh_texts();
 
     s_steam_active = st.flags & proto::FLAG_STEAM;
@@ -154,6 +161,15 @@ static void change_brew_time(int32_t delta)
     controller_link_send_command(proto::CMD_SET_BREW_DURATION, v);
 }
 
+static void change_stage_time(int32_t &seconds, int32_t delta, proto::CommandId cmd)
+{
+    int32_t v = seconds + delta;
+    if (v < STAGE_MIN || v > STAGE_MAX) return;
+    seconds = v;
+    refresh_texts();
+    controller_link_send_command(cmd, v);
+}
+
 extern "C" {
 
 int32_t get_var_temperature() { return s_temperature; }
@@ -166,6 +182,14 @@ void set_var_setpoint(int32_t v)
     s_setpoint_hold_until = millis() + 1500; // don't let in-flight controller states undo the drag
     set_setpoint(v);
 }
+int32_t get_var_preinfusion_seconds() { return s_preinfusion_seconds; }
+void set_var_preinfusion_seconds(int32_t v) { s_preinfusion_seconds = v; }
+int32_t get_var_bloom_seconds() { return s_bloom_seconds; }
+void set_var_bloom_seconds(int32_t v) { s_bloom_seconds = v; }
+const char *get_var_preinfusion_seconds_text() { return s_preinfusion_seconds_text; }
+void set_var_preinfusion_seconds_text(const char *v) { s_preinfusion_seconds_text = v; }
+const char *get_var_bloom_seconds_text() { return s_bloom_seconds_text; }
+void set_var_bloom_seconds_text(const char *v) { s_bloom_seconds_text = v; }
 int32_t get_var_brew_seconds() { return s_brew_seconds; }
 void set_var_brew_seconds(int32_t v) { s_brew_seconds = v; }
 
@@ -216,6 +240,10 @@ void action_brew_hold_toggle(lv_event_t *e) { controller_link_send_command(proto
 void action_steam_toggle(lv_event_t *e) { controller_link_send_command(proto::CMD_STEAM_TOGGLE); }
 void action_setpoint_inc(lv_event_t *e) { change_setpoint(+1); }
 void action_setpoint_dec(lv_event_t *e) { change_setpoint(-1); }
+void action_preinfusion_inc(lv_event_t *e) { change_stage_time(s_preinfusion_seconds, +1, proto::CMD_SET_PREINFUSION_DURATION); }
+void action_preinfusion_dec(lv_event_t *e) { change_stage_time(s_preinfusion_seconds, -1, proto::CMD_SET_PREINFUSION_DURATION); }
+void action_bloom_inc(lv_event_t *e) { change_stage_time(s_bloom_seconds, +1, proto::CMD_SET_BLOOM_DURATION); }
+void action_bloom_dec(lv_event_t *e) { change_stage_time(s_bloom_seconds, -1, proto::CMD_SET_BLOOM_DURATION); }
 void action_brew_time_inc(lv_event_t *e) { change_brew_time(+1); }
 void action_brew_time_dec(lv_event_t *e) { change_brew_time(-1); }
 

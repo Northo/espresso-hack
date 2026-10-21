@@ -166,6 +166,8 @@ static void sendState(const MachineState &state) {
                                             state.clean_state == CleanState::WATER)
                      ? proto::FLAG_CLEAN_PUMP : 0);
     msg.thermo_fault = (state.thermo_fault & 0x0F) | ((state.thermo_fault_latched & 0x0F) << 4);
+    msg.last_brew_ds = (uint16_t)min(65535UL, state.last_brew_ms / 100);
+    msg.since_brew_s = state.last_brew_end_ms == 0 ? 255 : (uint8_t)min(255UL, (millis() - state.last_brew_end_ms) / 1000);
     msg.clean_state = (uint8_t)state.clean_state;
     msg.clean_cycle = state.clean_cycle;
     uint16_t elapsed_s;

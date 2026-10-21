@@ -91,6 +91,9 @@ class FakeMachine:
         self.pump = False
         self.valve = False
         self.fault_latched = 0
+        self.last_brew_ds = 0
+        self.brew_end = 0.0
+        self.was_brewing = False
 
     def target(self):
         return STEAM_TEMP if self.steam else self.setpoint
@@ -121,6 +124,11 @@ class FakeMachine:
         if not brewing:
             self.hold = False
             self.brew_until = 0.0
+        if self.was_brewing and not brewing:
+            self.last_brew_ds = round((time.time() - self.brew_start) * 10)
+            self.brew_end = time.time()
+        self.was_brewing = brewing
+        since = 255 if self.brew_end == 0 else min(255, int(time.time() - self.brew_end))
         flags = (FLAG_BREWING if brewing else 0) | (FLAG_STEAM if self.steam else 0) | (FLAG_HOLD if self.hold else 0) | (FLAG_CLEAN_PUMP if self.clean_pump else 0) | (FLAG_PUMP if self.pump else 0) | (FLAG_VALVE if self.valve else 0)
         elapsed = max(0.0, time.time() - self.brew_start) if brewing else 0.0
         stage = 0
@@ -129,9 +137,9 @@ class FakeMachine:
         # Fake an open-circuit fault for 5 s out of every 60 s so the Sensor screen has something to show.
         fault = 1 if time.time() % 60 < 5 else 0
         self.fault_latched |= fault
-        return struct.pack("<BhhHBHBBBBBB", MSG_STATE, round(self.temp * 10), round(self.target() * 10),
+        return struct.pack("<BhhHBHBBBBBBHB", MSG_STATE, round(self.temp * 10), round(self.target() * 10),
                            self.brew_duration, flags, int(elapsed), stage, self.clean_state, self.clean_cycle,
-                           2, 5, fault | (self.fault_latched << 4))
+                           2, 5, fault | (self.fault_latched << 4), self.last_brew_ds, since)
 
     def handle(self, payload: bytes):
         if len(payload) != 4 or payload[0] != MSG_COMMAND:

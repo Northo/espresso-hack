@@ -42,6 +42,9 @@ static const char *s_clean_title_text = s_clean_title_buf, *s_clean_detail_text 
 static char s_thermo_status_buf[160] = "No data";
 static const char *s_thermo_status_text = s_thermo_status_buf;
 
+// How long the duration of the last shot replaces the brew plan on the Main screen after a brew ends.
+static constexpr unsigned SHOT_RESULT_SHOW_S = 10;
+
 static constexpr int32_t SETPOINT_MIN = 20, SETPOINT_MAX = 160; // matches the arc range
 static constexpr int32_t BREW_MIN = 1, BREW_MAX = 120;
 static constexpr int32_t STAGE_MIN = 0, STAGE_MAX = 30; // preinfusion / bloom, seconds (0 skips the stage)
@@ -163,6 +166,8 @@ void app_on_controller_state(const proto::StateMsg &st)
         } else {
             snprintf(s_brew_status_buf, sizeof(s_brew_status_buf), "%s +%us HOLD", stage, el - end);
         }
+    } else if (!s_brewing && st.last_brew_ds > 0 && st.since_brew_s < SHOT_RESULT_SHOW_S) {
+        snprintf(s_brew_status_buf, sizeof(s_brew_status_buf), "Shot %u.%u s", st.last_brew_ds / 10, st.last_brew_ds % 10);
     } else if (!s_brewing) {
         char *p = s_brew_status_buf;
         char *const e = s_brew_status_buf + sizeof(s_brew_status_buf);

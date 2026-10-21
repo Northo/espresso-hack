@@ -52,6 +52,11 @@ struct MachineState {
     // Manual pump/valve control (see manual_outputs.cpp)
     unsigned long manual_outputs_since = 0; // millis() when an output was last manually switched on
 
+    // Last finished brew (see brew_timer.cpp)
+    unsigned long last_brew_ms = 0;     // total duration, preinfusion included; 0 = none since boot
+    unsigned long last_brew_end_ms = 0; // millis() when it ended
+    uint32_t brew_count = 0;            // brews finished since boot
+
     // Cleaning sequence (see cleaning.cpp)
     CleanState clean_state = CleanState::IDLE;
     uint8_t clean_cycle = 0;          // 1-based

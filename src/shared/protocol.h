@@ -63,6 +63,8 @@ struct __attribute__((packed)) StateMsg {
     uint8_t preinfusion_s;    // configured duration of the preinfusion stage (brew_elapsed_s counts from its start)
     uint8_t bloom_s;          // configured duration of the bloom stage
     uint8_t thermo_fault;     // ThermoFault: current (low nibble) | latched (high nibble)
+    uint16_t last_brew_ds;    // total duration of the last finished brew, 0.1 s (0 = none since boot)
+    uint8_t since_brew_s;     // seconds since that brew ended, saturating at 255
 };
 
 enum CommandId : uint8_t {
@@ -88,6 +90,6 @@ struct __attribute__((packed)) CommandMsg {
     int16_t value;
 };
 
-constexpr size_t MAX_PAYLOAD = 16;
+constexpr size_t MAX_PAYLOAD = 32;
 
 } // namespace proto

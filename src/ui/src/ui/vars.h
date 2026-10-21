@@ -66,6 +66,10 @@ extern int32_t get_var_bloom_seconds();
 extern void set_var_bloom_seconds(int32_t value);
 extern const char *get_var_bloom_seconds_text();
 extern void set_var_bloom_seconds_text(const char *value);
+extern const char *get_var_pump_button_text();
+extern void set_var_pump_button_text(const char *value);
+extern const char *get_var_valve_button_text();
+extern void set_var_valve_button_text(const char *value);
 
 #ifdef __cplusplus
 }

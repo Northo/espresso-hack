@@ -2,6 +2,7 @@
 #include "network/display_link.h"
 #include "config.h"
 #include "cleaning.h"
+#include "manual_outputs.h"
 #include "protocol.h"
 #include <Arduino.h>
 #include <WiFi.h>
@@ -90,6 +91,14 @@ static void applyCommand(MachineState &state, const proto::CommandMsg &cmd) {
         if (state.auto_brew_enabled) state.brew_hold = !state.brew_hold;
         break;
 
+    case proto::CMD_PUMP_SET:
+        setManualPump(state, cmd.value != 0);
+        break;
+
+    case proto::CMD_VALVE_SET:
+        setManualValve(state, cmd.value != 0);
+        break;
+
     case proto::CMD_STEAM_TOGGLE:
         if (!steam) {
             enterSteamMode(state);
@@ -146,6 +155,8 @@ static void sendState(const MachineState &state) {
     msg.flags = (state.auto_brew_enabled ? proto::FLAG_BREWING : 0) |
                 (state.mode == ControlMode::BANG_BANG ? proto::FLAG_STEAM : 0) |
                 (state.brew_hold ? proto::FLAG_HOLD : 0) |
+                (state.pump_active ? proto::FLAG_PUMP : 0) |
+                (state.solenoid_active ? proto::FLAG_VALVE : 0) |
                 (state.clean_pump_phase && (state.clean_state == CleanState::DETERGENT ||
                                             state.clean_state == CleanState::WATER)
                      ? proto::FLAG_CLEAN_PUMP : 0);

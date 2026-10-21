@@ -17,6 +17,8 @@ enum StateFlags : uint8_t {
     FLAG_STEAM = 1 << 1,
     FLAG_HOLD = 1 << 2, // brew hold: keep brewing past the brew duration
     FLAG_CLEAN_PUMP = 1 << 3, // cleaning: pump currently on
+    FLAG_PUMP = 1 << 4,       // pump output is on (any source)
+    FLAG_VALVE = 1 << 5,      // solenoid valve is open (any source)
 };
 
 enum BrewStage : uint8_t {
@@ -64,6 +66,8 @@ enum CommandId : uint8_t {
     CMD_CLEAN_CONTINUE = 9,    // proceed from CLEAN_WAIT_REMOVE to the water cycles
     CMD_SET_PREINFUSION_DURATION = 10, // value: seconds (0 = skip the stage)
     CMD_SET_BLOOM_DURATION = 11,       // value: seconds (0 = skip the stage)
+    CMD_PUMP_SET = 12,  // value: 1 = on, 0 = off. Manual; ignored while brewing/cleaning, auto-off after a timeout
+    CMD_VALVE_SET = 13, // value: 1 = open, 0 = closed. Same rules as CMD_PUMP_SET
 };
 
 struct __attribute__((packed)) CommandMsg {

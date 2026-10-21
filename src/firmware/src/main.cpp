@@ -5,6 +5,7 @@
 #include "controller.h"
 #include "cleaning.h"
 #include "relay.h"
+#include "manual_outputs.h"
 #include "thermocouple.h"
 #include "config.h"
 #if HAS_DISPLAY
@@ -56,6 +57,7 @@ void loop() {
     updateThermocoupleReading(machine_state);
     updateController(machine_state);
     updateCleaning(machine_state);
+    updateManualOutputs(machine_state);
     updateRelay(machine_state);
     handleButtons(machine_state);
 

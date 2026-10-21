@@ -49,6 +49,9 @@ struct MachineState {
     long auto_brew_duration = DEFAULT_AUTO_BREW_DURATION;
     long auto_brew_bloom_duration = DEFAULT_AUTO_BREW_BLOOM_DURATION;
 
+    // Manual pump/valve control (see manual_outputs.cpp)
+    unsigned long manual_outputs_since = 0; // millis() when an output was last manually switched on
+
     // Cleaning sequence (see cleaning.cpp)
     CleanState clean_state = CleanState::IDLE;
     uint8_t clean_cycle = 0;          // 1-based

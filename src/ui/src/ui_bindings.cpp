@@ -25,6 +25,11 @@ static bool s_steam_active, s_brewing, s_brew_hold, s_brew_idle = true;
 static char s_brew_button_buf[8] = "BREW", s_brew_status_buf[32] = "";
 static const char *s_brew_button_text = s_brew_button_buf, *s_brew_status_text = s_brew_status_buf;
 
+// Manual pump/valve state, as reported by the controller (any source).
+static bool s_pump_on, s_valve_on;
+static char s_pump_button_buf[16] = "PUMP OFF", s_valve_button_buf[16] = "VALVE CLOSED";
+static const char *s_pump_button_text = s_pump_button_buf, *s_valve_button_text = s_valve_button_buf;
+
 // Cleaning screen state, driven by the controller.
 static uint8_t s_clean_state = proto::CLEAN_IDLE;
 static bool s_clean_running, s_clean_done;
@@ -108,6 +113,11 @@ void app_on_controller_state(const proto::StateMsg &st)
     snprintf(s_brew_button_buf, sizeof(s_brew_button_buf), "%s", s_brewing ? "STOP" : "BREW");
 
     update_clean_texts(st);
+
+    s_pump_on = st.flags & proto::FLAG_PUMP;
+    s_valve_on = st.flags & proto::FLAG_VALVE;
+    snprintf(s_pump_button_buf, sizeof(s_pump_button_buf), "%s", s_pump_on ? "PUMP ON" : "PUMP OFF");
+    snprintf(s_valve_button_buf, sizeof(s_valve_button_buf), "%s", s_valve_on ? "VALVE OPEN" : "VALVE CLOSED");
 
     // Brew status: while brewing, "STAGE <seconds left in this stage>" (or "BREW +Ns HOLD" once a hold runs
     // past the main stage); when idle, the plan, e.g. "2 + 5 + 30 s".
@@ -207,6 +217,10 @@ const char *get_var_clean_primary_text() { return s_clean_primary_text; }
 void set_var_clean_primary_text(const char *v) { s_clean_primary_text = v; }
 const char *get_var_clean_secondary_text() { return s_clean_secondary_text; }
 void set_var_clean_secondary_text(const char *v) { s_clean_secondary_text = v; }
+const char *get_var_pump_button_text() { return s_pump_button_text; }
+void set_var_pump_button_text(const char *v) { s_pump_button_text = v; }
+const char *get_var_valve_button_text() { return s_valve_button_text; }
+void set_var_valve_button_text(const char *v) { s_valve_button_text = v; }
 bool get_var_brew_hold() { return s_brew_hold; }
 void set_var_brew_hold(bool v) { s_brew_hold = v; }
 // True when the temperature is below the arc range (85 °C): hides the arc's start-cap dot.
@@ -246,6 +260,18 @@ void action_bloom_inc(lv_event_t *e) { change_stage_time(s_bloom_seconds, +1, pr
 void action_bloom_dec(lv_event_t *e) { change_stage_time(s_bloom_seconds, -1, proto::CMD_SET_BLOOM_DURATION); }
 void action_brew_time_inc(lv_event_t *e) { change_brew_time(+1); }
 void action_brew_time_dec(lv_event_t *e) { change_brew_time(-1); }
+
+void action_open_manual(lv_event_t *e) { loadScreen(SCREEN_ID_MANUAL); }
+void action_manual_back(lv_event_t *e) { loadScreen(SCREEN_ID_SETTINGS); }
+// Absolute set commands (not toggles) so a lost packet or a second input source can't invert the meaning.
+// The button text follows the controller's state, so it only changes once the controller confirms.
+void action_pump_toggle(lv_event_t *e) { controller_link_send_command(proto::CMD_PUMP_SET, !s_pump_on); }
+void action_valve_toggle(lv_event_t *e) { controller_link_send_command(proto::CMD_VALVE_SET, !s_valve_on); }
+void action_manual_gesture(lv_event_t *e)
+{
+    lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
+    if (dir == LV_DIR_RIGHT || dir == LV_DIR_BOTTOM) loadScreen(SCREEN_ID_SETTINGS);
+}
 
 void action_open_clean(lv_event_t *e) { loadScreen(SCREEN_ID_CLEAN); }
 

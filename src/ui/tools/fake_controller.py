@@ -19,13 +19,14 @@ import serial
 
 START = 0x7E
 MSG_STATE, MSG_COMMAND = 1, 2
-FLAG_BREWING, FLAG_STEAM, FLAG_HOLD, FLAG_CLEAN_PUMP = 1, 2, 4, 8
+FLAG_BREWING, FLAG_STEAM, FLAG_HOLD, FLAG_CLEAN_PUMP, FLAG_PUMP, FLAG_VALVE = 1, 2, 4, 8, 16, 32
+CMD_PUMP_SET, CMD_VALVE_SET = 12, 13
 CMD_BREW_START, CMD_STEAM_TOGGLE, CMD_SET_SETPOINT, CMD_SET_BREW_DURATION, CMD_BREW_STOP, CMD_BREW_HOLD_TOGGLE = 1, 2, 3, 4, 5, 6
 CMD_CLEAN_START, CMD_CLEAN_CANCEL, CMD_CLEAN_CONTINUE = 7, 8, 9
 CLEAN_IDLE, CLEAN_DETERGENT, CLEAN_WAIT_REMOVE, CLEAN_WATER, CLEAN_DONE = range(5)
 CLEAN_CYCLES = 5
 CMD_NAMES = {1: "BREW_START", 2: "STEAM_TOGGLE", 3: "SET_SETPOINT", 4: "SET_BREW_DURATION", 5: "BREW_STOP", 6: "BREW_HOLD_TOGGLE",
-             7: "CLEAN_START", 8: "CLEAN_CANCEL", 9: "CLEAN_CONTINUE"}
+             7: "CLEAN_START", 8: "CLEAN_CANCEL", 9: "CLEAN_CONTINUE", 12: "PUMP_SET", 13: "VALVE_SET"}
 STEAM_TEMP = 130.0
 
 
@@ -87,6 +88,8 @@ class FakeMachine:
         self.brew_until = 0.0
         self.brew_start = 0.0
         self.hold = False
+        self.pump = False
+        self.valve = False
 
     def target(self):
         return STEAM_TEMP if self.steam else self.setpoint
@@ -117,7 +120,7 @@ class FakeMachine:
         if not brewing:
             self.hold = False
             self.brew_until = 0.0
-        flags = (FLAG_BREWING if brewing else 0) | (FLAG_STEAM if self.steam else 0) | (FLAG_HOLD if self.hold else 0) | (FLAG_CLEAN_PUMP if self.clean_pump else 0)
+        flags = (FLAG_BREWING if brewing else 0) | (FLAG_STEAM if self.steam else 0) | (FLAG_HOLD if self.hold else 0) | (FLAG_CLEAN_PUMP if self.clean_pump else 0) | (FLAG_PUMP if self.pump else 0) | (FLAG_VALVE if self.valve else 0)
         elapsed = max(0.0, time.time() - self.brew_start) if brewing else 0.0
         stage = 0
         if brewing:
@@ -151,6 +154,12 @@ class FakeMachine:
         elif cmd == CMD_BREW_HOLD_TOGGLE:
             if self.brew_until > 0:
                 self.hold = not self.hold
+        elif cmd == CMD_PUMP_SET:
+            if self.brew_until <= 0 and self.clean_state == CLEAN_IDLE:
+                self.pump = bool(value)
+        elif cmd == CMD_VALVE_SET:
+            if self.brew_until <= 0 and self.clean_state == CLEAN_IDLE:
+                self.valve = bool(value)
         elif cmd == CMD_STEAM_TOGGLE:
             self.steam = not self.steam
         elif cmd == CMD_SET_SETPOINT:

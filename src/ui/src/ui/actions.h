@@ -25,6 +25,11 @@ extern void action_preinfusion_inc(lv_event_t * e);
 extern void action_preinfusion_dec(lv_event_t * e);
 extern void action_bloom_inc(lv_event_t * e);
 extern void action_bloom_dec(lv_event_t * e);
+extern void action_pump_toggle(lv_event_t * e);
+extern void action_valve_toggle(lv_event_t * e);
+extern void action_open_manual(lv_event_t * e);
+extern void action_manual_back(lv_event_t * e);
+extern void action_manual_gesture(lv_event_t * e);
 
 #ifdef __cplusplus
 }

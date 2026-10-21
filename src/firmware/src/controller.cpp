@@ -26,7 +26,8 @@ enum class BrewStage
 
 static BrewStage brew_stage = BrewStage::NONE;
 
-void updateController(MachineState &state)
+// Computes state.heater_power from the current mode. Only called with a valid temperature sample.
+static void computeHeaterPower(MachineState &state)
 {
     if (state.mode == ControlMode::PID)
     {
@@ -65,6 +66,26 @@ void updateController(MachineState &state)
             state.do_feed_forward = false;
         }
     }
+}
+
+void updateController(MachineState &state)
+{
+    if (state.safety_shutdown)
+    {
+        // Persistent sensor fault: heater off, whatever the mode. Latched until reboot.
+        pid.SetMode(MANUAL);
+        state.pid_power = 0;
+        state.heater_power = 0;
+        state.do_feed_forward = false;
+        state.manual_power = 0;
+        return;
+    }
+
+    // A bad/missing sample (e.g. SPI jitter) must not reach the controller: a 0 would read as "very cold" and
+    // crank up the power. Hold the current output instead; the safety timeout in thermocouple.cpp takes over if
+    // the fault persists. Before the first good sample the output stays at its initial 0.
+    if (state.temperature_valid)
+        computeHeaterPower(state);
 
     if (!state.auto_brew_enabled)
         state.brew_hold = false;

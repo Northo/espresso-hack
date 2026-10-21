@@ -20,7 +20,7 @@ import serial
 START = 0x7E
 MSG_STATE, MSG_COMMAND = 1, 2
 FLAG_BREWING, FLAG_STEAM, FLAG_HOLD, FLAG_CLEAN_PUMP, FLAG_PUMP, FLAG_VALVE = 1, 2, 4, 8, 16, 32
-CMD_PUMP_SET, CMD_VALVE_SET = 12, 13
+CMD_PUMP_SET, CMD_VALVE_SET, CMD_THERMO_FAULT_CLEAR = 12, 13, 14
 CMD_BREW_START, CMD_STEAM_TOGGLE, CMD_SET_SETPOINT, CMD_SET_BREW_DURATION, CMD_BREW_STOP, CMD_BREW_HOLD_TOGGLE = 1, 2, 3, 4, 5, 6
 CMD_CLEAN_START, CMD_CLEAN_CANCEL, CMD_CLEAN_CONTINUE = 7, 8, 9
 CLEAN_IDLE, CLEAN_DETERGENT, CLEAN_WAIT_REMOVE, CLEAN_WATER, CLEAN_DONE = range(5)
@@ -90,6 +90,7 @@ class FakeMachine:
         self.hold = False
         self.pump = False
         self.valve = False
+        self.fault_latched = 0
 
     def target(self):
         return STEAM_TEMP if self.steam else self.setpoint
@@ -125,8 +126,12 @@ class FakeMachine:
         stage = 0
         if brewing:
             stage = 1 if elapsed < 2 else 2 if elapsed < 7 else 3
-        return struct.pack("<BhhHBHBBB", MSG_STATE, round(self.temp * 10), round(self.target() * 10),
-                           self.brew_duration, flags, int(elapsed), stage, self.clean_state, self.clean_cycle)
+        # Fake an open-circuit fault for 5 s out of every 60 s so the Sensor screen has something to show.
+        fault = 1 if time.time() % 60 < 5 else 0
+        self.fault_latched |= fault
+        return struct.pack("<BhhHBHBBBBBB", MSG_STATE, round(self.temp * 10), round(self.target() * 10),
+                           self.brew_duration, flags, int(elapsed), stage, self.clean_state, self.clean_cycle,
+                           2, 5, fault | (self.fault_latched << 4))
 
     def handle(self, payload: bytes):
         if len(payload) != 4 or payload[0] != MSG_COMMAND:
@@ -160,6 +165,8 @@ class FakeMachine:
         elif cmd == CMD_VALVE_SET:
             if self.brew_until <= 0 and self.clean_state == CLEAN_IDLE:
                 self.valve = bool(value)
+        elif cmd == CMD_THERMO_FAULT_CLEAR:
+            self.fault_latched = 0
         elif cmd == CMD_STEAM_TOGGLE:
             self.steam = not self.steam
         elif cmd == CMD_SET_SETPOINT:

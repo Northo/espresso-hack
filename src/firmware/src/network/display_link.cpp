@@ -107,6 +107,10 @@ static void applyCommand(MachineState &state, const proto::CommandMsg &cmd) {
         }
         break;
 
+    case proto::CMD_THERMO_FAULT_CLEAR:
+        state.thermo_fault_latched = 0;
+        break;
+
     case proto::CMD_SET_SETPOINT: {
         if (steam) break; // the steam target is fixed
         double t = cmd.value / 10.0;
@@ -155,11 +159,13 @@ static void sendState(const MachineState &state) {
     msg.flags = (state.auto_brew_enabled ? proto::FLAG_BREWING : 0) |
                 (state.mode == ControlMode::BANG_BANG ? proto::FLAG_STEAM : 0) |
                 (state.brew_hold ? proto::FLAG_HOLD : 0) |
+                (state.safety_shutdown ? proto::FLAG_SAFETY : 0) |
                 (state.pump_active ? proto::FLAG_PUMP : 0) |
                 (state.solenoid_active ? proto::FLAG_VALVE : 0) |
                 (state.clean_pump_phase && (state.clean_state == CleanState::DETERGENT ||
                                             state.clean_state == CleanState::WATER)
                      ? proto::FLAG_CLEAN_PUMP : 0);
+    msg.thermo_fault = (state.thermo_fault & 0x0F) | ((state.thermo_fault_latched & 0x0F) << 4);
     msg.clean_state = (uint8_t)state.clean_state;
     msg.clean_cycle = state.clean_cycle;
     uint16_t elapsed_s;

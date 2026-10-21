@@ -716,6 +716,23 @@ void create_screen_settings() {
                 }
             }
         }
+        {
+            lv_obj_t *obj = lv_button_create(parent_obj);
+            lv_obj_set_pos(obj, 170, 410);
+            lv_obj_set_size(obj, 140, 40);
+            lv_obj_add_event_cb(obj, action_open_sensor, LV_EVENT_CLICKED, (void *)0);
+            add_style_btn_hold(obj);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    lv_obj_set_pos(obj, 0, 0);
+                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+                    lv_obj_set_style_align(obj, LV_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text_static(obj, "SENSOR");
+                }
+            }
+        }
     }
     
     tick_screen_settings();
@@ -1346,6 +1363,82 @@ void tick_screen_manual() {
     }
 }
 
+void create_screen_sensor() {
+    lv_obj_t *obj = lv_obj_create(0);
+    objects.sensor = obj;
+    lv_obj_set_pos(obj, 0, 0);
+    lv_obj_set_size(obj, 480, 480);
+    lv_obj_add_event_cb(obj, action_sensor_gesture, LV_EVENT_GESTURE, (void *)0);
+    lv_obj_remove_flag(obj, LV_OBJ_FLAG_PRESS_LOCK|LV_OBJ_FLAG_CLICK_FOCUSABLE|LV_OBJ_FLAG_GESTURE_BUBBLE|LV_OBJ_FLAG_SNAPPABLE|LV_OBJ_FLAG_SCROLLABLE|LV_OBJ_FLAG_SCROLL_ELASTIC|LV_OBJ_FLAG_SCROLL_MOMENTUM|LV_OBJ_FLAG_SCROLL_CHAIN_HOR|LV_OBJ_FLAG_SCROLL_CHAIN_VER);
+    add_style_screen_bg(obj);
+    {
+        lv_obj_t *parent_obj = obj;
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            lv_obj_set_pos(obj, 90, 70);
+            lv_obj_set_size(obj, 300, 40);
+            add_style_lbl_value(obj);
+            lv_label_set_text_static(obj, "Thermocouple");
+        }
+        {
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            objects.obj27 = obj;
+            lv_obj_set_pos(obj, 90, 125);
+            lv_obj_set_size(obj, 300, 110);
+            add_style_lbl_small(obj);
+            lv_label_set_text(obj, "");
+        }
+        {
+            lv_obj_t *obj = lv_button_create(parent_obj);
+            lv_obj_set_pos(obj, 70, 330);
+            lv_obj_set_size(obj, 150, 64);
+            lv_obj_add_event_cb(obj, action_sensor_clear, LV_EVENT_CLICKED, (void *)0);
+            add_style_btn_hold(obj);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    lv_obj_set_pos(obj, 0, 0);
+                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+                    lv_obj_set_style_align(obj, LV_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text_static(obj, "CLEAR");
+                }
+            }
+        }
+        {
+            lv_obj_t *obj = lv_button_create(parent_obj);
+            lv_obj_set_pos(obj, 260, 330);
+            lv_obj_set_size(obj, 150, 64);
+            lv_obj_add_event_cb(obj, action_sensor_back, LV_EVENT_CLICKED, (void *)0);
+            add_style_btn_hold(obj);
+            {
+                lv_obj_t *parent_obj = obj;
+                {
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    lv_obj_set_pos(obj, 0, 0);
+                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+                    lv_obj_set_style_align(obj, LV_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text_static(obj, "BACK");
+                }
+            }
+        }
+    }
+    
+    tick_screen_sensor();
+}
+
+void tick_screen_sensor() {
+    {
+        const char *new_val = get_var_thermo_status_text();
+        const char *cur_val = lv_label_get_text(objects.obj27);
+        if (strcmp(new_val, cur_val) != 0) {
+            tick_value_change_obj = objects.obj27;
+            lv_label_set_text(objects.obj27, new_val);
+            tick_value_change_obj = NULL;
+        }
+    }
+}
+
 typedef void (*tick_screen_func_t)();
 tick_screen_func_t tick_screen_funcs[] = {
     tick_screen_main,
@@ -1354,9 +1447,10 @@ tick_screen_func_t tick_screen_funcs[] = {
     tick_screen_main_1,
     tick_screen_chart,
     tick_screen_manual,
+    tick_screen_sensor,
 };
 void tick_screen(int screen_index) {
-    if (screen_index >= 0 && screen_index < 6) {
+    if (screen_index >= 0 && screen_index < 7) {
         tick_screen_funcs[screen_index]();
     }
 }
@@ -1486,6 +1580,7 @@ void change_color_theme(uint32_t theme_index) {
     lv_obj_invalidate(objects.main_1);
     lv_obj_invalidate(objects.chart);
     lv_obj_invalidate(objects.manual);
+    lv_obj_invalidate(objects.sensor);
 }
 uint32_t theme_colors[1][6] = {
     { 0xff101114, 0xff2a2d33, 0xffff8a1f, 0xfff2f2f2, 0xff1e2126, 0xff3aa0ff },
@@ -1510,4 +1605,5 @@ void create_screens() {
     create_screen_main_1();
     create_screen_chart();
     create_screen_manual();
+    create_screen_sensor();
 }

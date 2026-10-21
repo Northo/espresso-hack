@@ -19,6 +19,16 @@ enum StateFlags : uint8_t {
     FLAG_CLEAN_PUMP = 1 << 3, // cleaning: pump currently on
     FLAG_PUMP = 1 << 4,       // pump output is on (any source)
     FLAG_VALVE = 1 << 5,      // solenoid valve is open (any source)
+    FLAG_SAFETY = 1 << 6,     // safety shutdown: persistent thermocouple fault, heater forced off until reboot
+};
+
+// MAX31855 thermocouple fault bits (StateMsg::thermo_fault: low nibble = current, high nibble = latched
+// since the last CMD_THERMO_FAULT_CLEAR, i.e. (bits << 4)).
+enum ThermoFault : uint8_t {
+    THERMO_FAULT_OPEN = 1 << 0,    // OC: thermocouple open circuit
+    THERMO_FAULT_GND = 1 << 1,     // SCG: shorted to GND
+    THERMO_FAULT_VCC = 1 << 2,     // SCV: shorted to VCC
+    THERMO_FAULT_UNKNOWN = 1 << 3, // no valid data: all-zero frame (sensor not responding) or a NaN read with clear fault bits (glitch)
 };
 
 enum BrewStage : uint8_t {
@@ -52,6 +62,7 @@ struct __attribute__((packed)) StateMsg {
     uint8_t clean_cycle;      // current cycle, 1..CLEAN_CYCLES (0 when idle)
     uint8_t preinfusion_s;    // configured duration of the preinfusion stage (brew_elapsed_s counts from its start)
     uint8_t bloom_s;          // configured duration of the bloom stage
+    uint8_t thermo_fault;     // ThermoFault: current (low nibble) | latched (high nibble)
 };
 
 enum CommandId : uint8_t {
@@ -68,6 +79,7 @@ enum CommandId : uint8_t {
     CMD_SET_BLOOM_DURATION = 11,       // value: seconds (0 = skip the stage)
     CMD_PUMP_SET = 12,  // value: 1 = on, 0 = off. Manual; ignored while brewing/cleaning, auto-off after a timeout
     CMD_VALVE_SET = 13, // value: 1 = open, 0 = closed. Same rules as CMD_PUMP_SET
+    CMD_THERMO_FAULT_CLEAR = 14, // clear the latched thermocouple fault bits
 };
 
 struct __attribute__((packed)) CommandMsg {

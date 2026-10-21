@@ -30,6 +30,10 @@ extern void action_valve_toggle(lv_event_t * e);
 extern void action_open_manual(lv_event_t * e);
 extern void action_manual_back(lv_event_t * e);
 extern void action_manual_gesture(lv_event_t * e);
+extern void action_open_sensor(lv_event_t * e);
+extern void action_sensor_back(lv_event_t * e);
+extern void action_sensor_clear(lv_event_t * e);
+extern void action_sensor_gesture(lv_event_t * e);
 
 #ifdef __cplusplus
 }

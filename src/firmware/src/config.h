@@ -12,6 +12,9 @@ constexpr double DEFAULT_KD = 0.0;
 
 constexpr int THERMOCUPLE_READ_INTERVAL = 100; // ms
 constexpr float DEFAULT_TEMPERATURE_EMA_ALPHA = 1.0;
+// Bad samples are ignored (the controller holds its last output) for this long. If no valid reading arrives
+// within this time, the safety shutdown trips: the heater is forced off until the controller is rebooted.
+constexpr unsigned long THERMO_FAULT_TIMEOUT_MS = 1500;
 
 constexpr const char *WIFI_HOSTNAME = "espresso-controller";
 constexpr int OTA_PORT = 3232;

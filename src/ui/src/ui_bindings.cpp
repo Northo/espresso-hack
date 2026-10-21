@@ -38,6 +38,10 @@ static char s_clean_title_buf[32] = "", s_clean_detail_buf[96] = "", s_clean_pri
 static const char *s_clean_title_text = s_clean_title_buf, *s_clean_detail_text = s_clean_detail_buf,
                   *s_clean_primary_text = s_clean_primary_buf, *s_clean_secondary_text = s_clean_secondary_buf;
 
+// Thermocouple (MAX31855) fault readout, see proto::ThermoFault.
+static char s_thermo_status_buf[160] = "No data";
+static const char *s_thermo_status_text = s_thermo_status_buf;
+
 static constexpr int32_t SETPOINT_MIN = 20, SETPOINT_MAX = 160; // matches the arc range
 static constexpr int32_t BREW_MIN = 1, BREW_MAX = 120;
 static constexpr int32_t STAGE_MIN = 0, STAGE_MAX = 30; // preinfusion / bloom, seconds (0 skips the stage)
@@ -90,6 +94,31 @@ static void update_clean_texts(const proto::StateMsg &st)
     snprintf(s_clean_secondary_buf, sizeof(s_clean_secondary_buf), "%s", secondary);
 }
 
+// "OK" or a comma separated list of the fault names in `bits`.
+static void format_thermo_faults(char *out, size_t n, uint8_t bits)
+{
+    if (!(bits & 0x0F)) { snprintf(out, n, "OK"); return; }
+    out[0] = '\0';
+    size_t len = 0;
+    auto add = [&](uint8_t bit, const char *name) {
+        if (bits & bit) len += snprintf(out + len, n - len, "%s%s", len ? ", " : "", name);
+    };
+    add(proto::THERMO_FAULT_OPEN, "open circuit");
+    add(proto::THERMO_FAULT_GND, "short to GND");
+    add(proto::THERMO_FAULT_VCC, "short to VCC");
+    add(proto::THERMO_FAULT_UNKNOWN, "no data");
+}
+
+static void update_thermo_text(uint8_t fault, bool safety)
+{
+    const uint8_t now = fault & 0x0F, latched = fault >> 4;
+    char now_s[64], latched_s[64];
+    format_thermo_faults(now_s, sizeof(now_s), now);
+    format_thermo_faults(latched_s, sizeof(latched_s), latched);
+    snprintf(s_thermo_status_buf, sizeof(s_thermo_status_buf), "Now: 0x%02X %s\nSince clear: 0x%02X %s%s", now, now_s,
+             latched, latched_s, safety ? "\nSAFETY SHUTDOWN: heater off, reboot to reset" : "");
+}
+
 static int32_t round_x10(int16_t x10) { return (x10 + (x10 >= 0 ? 5 : -5)) / 10; }
 
 // State update from the controller (called from loop context via controller_link_poll()).
@@ -113,6 +142,7 @@ void app_on_controller_state(const proto::StateMsg &st)
     snprintf(s_brew_button_buf, sizeof(s_brew_button_buf), "%s", s_brewing ? "STOP" : "BREW");
 
     update_clean_texts(st);
+    update_thermo_text(st.thermo_fault, st.flags & proto::FLAG_SAFETY);
 
     s_pump_on = st.flags & proto::FLAG_PUMP;
     s_valve_on = st.flags & proto::FLAG_VALVE;
@@ -221,6 +251,8 @@ const char *get_var_pump_button_text() { return s_pump_button_text; }
 void set_var_pump_button_text(const char *v) { s_pump_button_text = v; }
 const char *get_var_valve_button_text() { return s_valve_button_text; }
 void set_var_valve_button_text(const char *v) { s_valve_button_text = v; }
+const char *get_var_thermo_status_text() { return s_thermo_status_text; }
+void set_var_thermo_status_text(const char *v) { s_thermo_status_text = v; }
 bool get_var_brew_hold() { return s_brew_hold; }
 void set_var_brew_hold(bool v) { s_brew_hold = v; }
 // True when the temperature is below the arc range (85 °C): hides the arc's start-cap dot.
@@ -268,6 +300,15 @@ void action_manual_back(lv_event_t *e) { loadScreen(SCREEN_ID_SETTINGS); }
 void action_pump_toggle(lv_event_t *e) { controller_link_send_command(proto::CMD_PUMP_SET, !s_pump_on); }
 void action_valve_toggle(lv_event_t *e) { controller_link_send_command(proto::CMD_VALVE_SET, !s_valve_on); }
 void action_manual_gesture(lv_event_t *e)
+{
+    lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
+    if (dir == LV_DIR_RIGHT || dir == LV_DIR_BOTTOM) loadScreen(SCREEN_ID_SETTINGS);
+}
+
+void action_open_sensor(lv_event_t *e) { loadScreen(SCREEN_ID_SENSOR); }
+void action_sensor_back(lv_event_t *e) { loadScreen(SCREEN_ID_SETTINGS); }
+void action_sensor_clear(lv_event_t *e) { controller_link_send_command(proto::CMD_THERMO_FAULT_CLEAR); }
+void action_sensor_gesture(lv_event_t *e)
 {
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
     if (dir == LV_DIR_RIGHT || dir == LV_DIR_BOTTOM) loadScreen(SCREEN_ID_SETTINGS);

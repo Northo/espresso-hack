@@ -70,6 +70,8 @@ extern const char *get_var_pump_button_text();
 extern void set_var_pump_button_text(const char *value);
 extern const char *get_var_valve_button_text();
 extern void set_var_valve_button_text(const char *value);
+extern const char *get_var_thermo_status_text();
+extern void set_var_thermo_status_text(const char *value);
 
 #ifdef __cplusplus
 }

@@ -62,6 +62,12 @@ struct MachineState {
     int relay_window_size = 1000; // ms for time-proportional control
 
     // Temperature input
+    uint8_t thermo_fault = 0;         // current MAX31855 fault bits (proto::ThermoFault)
+    uint8_t thermo_fault_latched = 0; // OR of all faults since cleared
+    uint32_t thermo_fault_count = 0;  // failed reads since boot
+    bool temperature_valid = false;   // the latest sample was good; false -> control loop must not use current_temperature
+    unsigned long last_valid_temperature_ms = 0; // millis() of the last good sample (boot time until the first one)
+    bool safety_shutdown = false;     // latched: persistent sensor fault, heater forced off until reboot
     float temperature_ema_alpha = DEFAULT_TEMPERATURE_EMA_ALPHA;
 
     // Manual mode

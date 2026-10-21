@@ -17,7 +17,8 @@ enum ScreensEnum {
     SCREEN_ID_MAIN_1 = 4,
     SCREEN_ID_CHART = 5,
     SCREEN_ID_MANUAL = 6,
-    _SCREEN_ID_LAST = 6
+    SCREEN_ID_SENSOR = 7,
+    _SCREEN_ID_LAST = 7
 };
 
 typedef struct _objects_t {
@@ -27,6 +28,7 @@ typedef struct _objects_t {
     lv_obj_t *main_1;
     lv_obj_t *chart;
     lv_obj_t *manual;
+    lv_obj_t *sensor;
     lv_obj_t *temperature;
     lv_obj_t *obj0;
     lv_obj_t *obj1;
@@ -59,6 +61,7 @@ typedef struct _objects_t {
     lv_obj_t *obj24;
     lv_obj_t *obj25;
     lv_obj_t *obj26;
+    lv_obj_t *obj27;
 } objects_t;
 
 extern objects_t objects;
@@ -97,6 +100,9 @@ void tick_screen_chart();
 
 void create_screen_manual();
 void tick_screen_manual();
+
+void create_screen_sensor();
+void tick_screen_sensor();
 
 void tick_screen_by_id(enum ScreensEnum screenId);
 void tick_screen(int screen_index);

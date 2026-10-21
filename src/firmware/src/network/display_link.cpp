@@ -1,3 +1,4 @@
+#if HAS_DISPLAY_LINK
 #include "network/display_link.h"
 #include "config.h"
 #include "cleaning.h"
@@ -176,3 +177,4 @@ void handleDisplayLink(MachineState &state) {
         sendState(state);
     }
 }
+#endif // HAS_DISPLAY_LINK

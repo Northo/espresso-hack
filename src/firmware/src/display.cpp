@@ -1,3 +1,4 @@
+#if HAS_DISPLAY
 #include "display.h"
 #include <TFT_eSPI.h>
 #include <Arduino.h>
@@ -110,3 +111,4 @@ void updateDisplay(const MachineState &state)
 
     spr.pushSprite(0, 0);
 }
+#endif // HAS_DISPLAY

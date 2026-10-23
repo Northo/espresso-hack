@@ -179,7 +179,7 @@ def test_setup_from_browser_and_clear_optional_fields(client):
     assert setup["grind_setting"] == 15.5
     assert setup["dose_g"] == 18
     assert 'value="15.5"' in client.get("/setup").text
-    assert "journal metadata only" in client.get("/setup").text
+    assert "Setup ready" in client.get("/setup").text
     client.post(
         "/setup",
         data={

@@ -1,9 +1,11 @@
 #include "ota.h"
 #include "config.h"
 #include <ArduinoOTA.h>
+#include <WiFi.h>
 #include <esp_log.h>
 
 static unsigned long last_ota_time = 0;
+static bool ota_started = false;
 
 void setupOTA(MachineState &machine_state) {
     ArduinoOTA.setHostname(WIFI_HOSTNAME);
@@ -43,9 +45,13 @@ void setupOTA(MachineState &machine_state) {
         Serial.println("End Failed");
       }
     });
-    ArduinoOTA.begin();
+    // WiFi joins asynchronously. Start OTA only once the station has an IP.
 };
 
 void handleOTA() {
-    ArduinoOTA.handle();
+    if (!ota_started && WiFi.status() == WL_CONNECTED) {
+        ArduinoOTA.begin();
+        ota_started = true;
+    }
+    if (ota_started) ArduinoOTA.handle();
 }

@@ -2,6 +2,7 @@
 #include <LilyGo_RGBPanel.h>
 #include <LV_Helper.h>
 #include "link/controller_link.h"
+#include "journal_ui.h"
 #ifndef LINK_NO_OTA
 #include "net_ota.h"
 #endif
@@ -40,6 +41,7 @@ void setup()
 
 #ifdef HAS_EEZ_UI
     ui_init();
+    journal_ui_begin();
 #endif
 
     panel.setBrightness(16);  // 0..16
@@ -55,6 +57,7 @@ void loop()
 #ifdef HAS_EEZ_UI
     ui_tick();
     app_chart_tick();
+    journal_ui_tick();
 #endif
     delay(2);
 }

@@ -28,7 +28,7 @@
     <a class="button secondary" href="{{ path_query('/shots', name=setup.coffee.name, roaster=setup.coffee.roaster or '') }}">Find previous settings ↗</a>
     {% else %}<p>No bag selected yet. You can still save a grind setting and dose, or add a bag first.</p>{% endif %}
     <hr><p>Saving creates a new setup revision. Earlier shots keep the settings they were brewed with.</p>
-    <p class="hint">This updates journal metadata only. It does not change the machine's temperature or brew timer, and device integration is still to come.</p>
+    <p class="hint">The touchscreen picks up these settings while idle. Wait for “Setup ready” on the machine before brewing. This does not change temperature or the brew timer.</p>
     <span class="badge">Current revision {{ setup.revision }}</span>
   </aside>
 </div>

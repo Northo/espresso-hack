@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include "config.h"
+#include "brew_record.h"
 
 enum class ControlMode {
     PID,
@@ -52,8 +53,13 @@ struct MachineState {
     // Manual pump/valve control (see manual_outputs.cpp)
     unsigned long manual_outputs_since = 0; // millis() when an output was last manually switched on
 
-    // Last finished brew (see brew_timer.cpp)
-    unsigned long last_brew_ms = 0;     // total duration, preinfusion included; 0 = none since boot
+    // Best-effort journal metadata; RAM only, never used to gate brewing.
+    uint64_t journal_boot_id = 0;
+    uint32_t journal_setup_revision = 0; // 0 = no setup received yet
+    BrewRecord brew_record;
+
+    // Last finished main brew (see brew_timer.cpp)
+    unsigned long last_brew_ms = 0;     // main stage only, including hold; 0 = none
     unsigned long last_brew_end_ms = 0; // millis() when it ended
     uint32_t brew_count = 0;            // brews finished since boot
 

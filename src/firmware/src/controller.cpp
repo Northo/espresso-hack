@@ -1,4 +1,5 @@
 #include "controller.h"
+#include "brew_timer.h"
 #include <PID_v1.h>
 #include <Arduino.h>
 
@@ -23,8 +24,6 @@ enum class BrewStage
     BREWING,
     DONE
 };
-
-static BrewStage brew_stage = BrewStage::NONE;
 
 // Computes state.heater_power from the current mode. Only called with a valid temperature sample.
 static void computeHeaterPower(MachineState &state)
@@ -78,6 +77,7 @@ void updateController(MachineState &state)
         state.heater_power = 0;
         state.do_feed_forward = false;
         state.manual_power = 0;
+        if (state.auto_brew_enabled) stopBrew(state);
         return;
     }
 
@@ -87,26 +87,27 @@ void updateController(MachineState &state)
     if (state.temperature_valid)
         computeHeaterPower(state);
 
-    if (!state.auto_brew_enabled)
+    if (!state.auto_brew_enabled) {
         state.brew_hold = false;
+    }
 
     if (state.auto_brew_enabled)
     {
-        auto elapsed = millis() - state.auto_brew_start_time;
-        BrewStage previous_stage = brew_stage;
+        const uint32_t now = millis();
+        const uint32_t elapsed = now - state.brew_record.started_ms;
+        const auto &record = state.brew_record;
+        BrewStage brew_stage;
 
-        if (elapsed < state.auto_brew_preinfusion_duration)
+        if (elapsed < record.preinfusion_ms)
             brew_stage = BrewStage::PREINFUSION;
-        else if (elapsed < state.auto_brew_preinfusion_duration + state.auto_brew_bloom_duration)
+        else if (elapsed < record.preinfusion_ms + record.bloom_ms)
             brew_stage = BrewStage::BLOOM;
-        else if (elapsed < state.auto_brew_preinfusion_duration + state.auto_brew_bloom_duration + state.auto_brew_duration)
+        else if (elapsed < record.preinfusion_ms + record.bloom_ms + record.configured_brew_ms)
             brew_stage = BrewStage::BREWING;
-        else if (state.brew_hold && elapsed < state.auto_brew_preinfusion_duration + state.auto_brew_bloom_duration + state.auto_brew_duration + MAX_BREW_HOLD_EXTRA)
+        else if (state.brew_hold && elapsed < record.preinfusion_ms + record.bloom_ms + record.configured_brew_ms + MAX_BREW_HOLD_EXTRA)
             brew_stage = BrewStage::BREWING; // hold: keep going until stopped (or the failsafe limit)
         else
             brew_stage = BrewStage::DONE;
-
-        bool stage_changed = (previous_stage != brew_stage);
 
         switch (brew_stage)
         {
@@ -123,18 +124,17 @@ void updateController(MachineState &state)
             state.solenoid_active = true;
 
             // If we transitioned into the brewing stage and feed forward isn't already active, start it
-            if (stage_changed && !state.do_feed_forward)
+            if (!state.brew_record.main_started && !state.do_feed_forward)
             {
                 state.do_feed_forward = true;
                 state.feed_forward_start_time = millis();
             }
+            state.brew_record.enterMain(now);
 
             break;
         case BrewStage::DONE:
         default:  // Something went wrong, fail safe by turning everything off
-            state.auto_brew_enabled = false;
-            state.pump_active = false;
-            state.solenoid_active = false;
+            stopBrew(state);
             break;
         }
     }

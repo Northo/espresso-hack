@@ -58,7 +58,6 @@ void loop() {
     updateThermocoupleReading(machine_state);
     updateController(machine_state);
     updateCleaning(machine_state);
-    updateBrewTimer(machine_state);
     updateManualOutputs(machine_state);
     updateRelay(machine_state);
     handleButtons(machine_state);

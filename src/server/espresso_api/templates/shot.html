@@ -13,7 +13,7 @@
     <p class="eyebrow">Captured at brew time</p><h2>The recipe &amp; the result</h2>
     <dl class="measurements">
       {{ measurement('Grind setting', shot.setup.grind_setting) }}
-      {{ measurement('Total duration', shot.duration_s, 's') }}
+      {{ measurement('Brew duration', shot.duration_s, 's') }}
       {{ measurement('Setpoint', shot.temperature_setpoint_c, '°C') }}
       {{ measurement('End temperature', shot.end_temperature_c, '°C') }}
       {{ measurement('Recipe dose', shot.setup.dose_g, 'g') }}

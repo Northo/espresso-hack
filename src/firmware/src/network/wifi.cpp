@@ -4,16 +4,12 @@
 #include <WiFi.h>
 #include <esp_log.h>
 
-
 void setupWiFi() {
-    ESP_LOGI("WIFI", "Starting WiFi connection to SSID: %s", WIFI_SSID);
+    // Joining/rejoining the AP must not stop the machine's control loop.
+    WiFi.mode(WIFI_STA);
     WiFi.setHostname(WIFI_HOSTNAME);
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-    while (WiFi.status() != WL_CONNECTED) {
-        ESP_LOGI("WIFI", "Waiting for WiFi connection...");
-        delay(500);
-    }
+    WiFi.setAutoReconnect(true);
     WiFi.setSleep(false);
-    ESP_LOGI("WIFI", "Connected to WiFi! IP address: %s", WiFi.localIP().toString().c_str());
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    ESP_LOGI("WIFI", "Connecting in background");
 }

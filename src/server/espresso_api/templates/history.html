@@ -35,7 +35,7 @@
 
   {% if page.items %}
   <div class="shot-list">
-    <div class="shot-list-heading" aria-hidden="true"><span>Coffee &amp; time</span><span>Grind</span><span>Dose → yield</span><span>Total time</span><span>Rating</span></div>
+    <div class="shot-list-heading" aria-hidden="true"><span>Coffee &amp; time</span><span>Grind</span><span>Dose → yield</span><span>Brew time</span><span>Rating</span></div>
     {% for shot in page.items %}
     <a class="shot-row" href="/shots/{{ shot.id }}">
       <div class="shot-coffee"><strong>{{ shot.setup.coffee.name if shot.setup.coffee else 'Coffee not recorded' }}</strong>
@@ -44,7 +44,7 @@
       </div>
       <div class="shot-stat"><span class="mobile-label">Grind</span><strong>{{ shot.setup.grind_setting|number }}</strong></div>
       <div class="shot-stat"><span class="mobile-label">Dose → yield</span><strong>{{ shot.dose_g|number }} → {{ shot.yield_g|number }}<small> g</small></strong></div>
-      <div class="shot-stat"><span class="mobile-label">Total time</span><strong>{{ shot.duration_s|number }}<small> s</small></strong></div>
+      <div class="shot-stat"><span class="mobile-label">Brew time</span><strong>{{ shot.duration_s|number }}<small> s</small></strong></div>
       <div class="shot-stat"><span class="mobile-label">Rating</span><span class="rating">{% if shot.rating %}{{ shot.rating }}<small> / 5</small>{% else %}—{% endif %}</span></div>
     </a>
     {% endfor %}
@@ -57,5 +57,5 @@
   {% endif %}
   {{ pagination() }}
 </section>
-<p class="page-note">Times are shown in UTC, ordered by server receipt. Brew duration includes preinfusion and bloom.</p>
+<p class="page-note">Times are shown in UTC, ordered by server receipt. Brew duration measures the main brewing stage, including hold; preinfusion and bloom are excluded.</p>
 {% endblock %}

@@ -10,6 +10,9 @@ namespace proto {
 enum MsgType : uint8_t {
     MSG_STATE = 1,   // controller -> display
     MSG_COMMAND = 2, // display -> controller
+    MSG_JOURNAL_STATUS = 3, // controller boot/session and setup acknowledgement
+    MSG_JOURNAL_SETUP = 4,  // display -> controller: revision for subsequent brews
+    MSG_SHOT = 5,          // controller -> display: immutable brew snapshot/result
 };
 
 enum StateFlags : uint8_t {
@@ -63,7 +66,7 @@ struct __attribute__((packed)) StateMsg {
     uint8_t preinfusion_s;    // configured duration of the preinfusion stage (brew_elapsed_s counts from its start)
     uint8_t bloom_s;          // configured duration of the bloom stage
     uint8_t thermo_fault;     // ThermoFault: current (low nibble) | latched (high nibble)
-    uint16_t last_brew_ds;    // total duration of the last finished brew, 0.1 s (0 = none since boot)
+    uint16_t last_brew_ds;    // actual MAIN brew duration, including hold, 0.1 s (0 = none)
     uint8_t since_brew_s;     // seconds since that brew ended, saturating at 255
 };
 
@@ -90,6 +93,34 @@ struct __attribute__((packed)) CommandMsg {
     int16_t value;
 };
 
+// Repeated alongside StateMsg. The display retries setup announcements until
+// acknowledged; the controller freezes the acknowledged revision at brew start.
+struct __attribute__((packed)) JournalStatusMsg {
+    uint8_t type;
+    uint64_t boot_id;
+    uint32_t sequence;
+    uint32_t setup_revision;
+};
+struct __attribute__((packed)) JournalSetupMsg {
+    uint8_t type;
+    uint32_t setup_revision;
+};
+struct __attribute__((packed)) ShotMsg {
+    uint8_t type;
+    uint64_t boot_id;
+    uint32_t sequence;
+    uint8_t phase; // BrewRecord::Phase: 1 running, 2 finished, 3 aborted before main
+    uint32_t setup_revision;
+    uint32_t duration_ms; // actual main stage only; includes hold
+    uint8_t preinfusion_s;
+    uint8_t bloom_s;
+    uint16_t configured_brew_s;
+    int16_t setpoint_x10;
+    int16_t end_temperature_x10; // INT16_MIN = unknown
+};
+
 constexpr size_t MAX_PAYLOAD = 32;
+static_assert(sizeof(ShotMsg) <= MAX_PAYLOAD, "Shot packet exceeds transport limit");
+static_assert(sizeof(StateMsg) <= MAX_PAYLOAD, "State packet exceeds transport limit");
 
 } // namespace proto

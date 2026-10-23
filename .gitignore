@@ -1,3 +1,4 @@
 logs
 **/.DS_Store
 __pycache__/
+/src/ui/src/journal_config.h

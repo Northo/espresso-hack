@@ -3,7 +3,8 @@
 A small, unauthenticated **trusted-LAN-only** shot journal built with FastAPI,
 Pydantic, and SQLite, with a mobile-friendly Jinja2/HTMX web UI. One application
 process, no separate database service, frontend build pipeline, or message broker.
-Firmware and touchscreen integration are not implemented here yet.
+The [touchscreen integration](../ui/README.md) selects coffee/grind settings,
+uploads main-stage brew time, and lets you enter measured yield after brewing.
 
 ## Run with Docker
 
@@ -85,6 +86,22 @@ HTML routes and the existing `/api/v1` routes call the same operations in
 No database schema changes are needed. Browser form submissions check the Origin
 header when present, but this remains an unauthenticated LAN application.
 
+## Machine integration
+
+Configure the display's server URL and flash matching controller/display firmware
+as described in [the touchscreen README](../ui/README.md). Device requests use
+this JSON API, not the HTML routes. The display refreshes setup while idle and
+announces its revision to the controller; wait for **Setup ready** before brewing.
+
+The controller freezes that revision and recipe at brew start. The display
+uploads the finished shot without blocking machine control, then PATCHes actual
+measured yield when entered. Unknown yield stays null, not the target yield.
+Uploads are best-effort: there is no persistent queue.
+
+**Timing contract correction:** `duration_s` now means actual main-stage time,
+including HOLD and excluding preinfusion/bloom. No historical shot records
+needed preservation, so no conversion or database migration is performed.
+
 ## API
 
 All routes are under `/api/v1`. Requests and responses use JSON. See `/docs`
@@ -145,7 +162,8 @@ Required fields:
 - `id`: client-generated UUID.
 - `setup_revision`: the saved setup used at brew start, not the current setup
   fetched after brewing ends.
-- `duration_s`: actual total elapsed seconds, **including preinfusion and bloom**.
+- `duration_s`: actual **main brewing-stage seconds**, including HOLD extensions;
+  **excludes preinfusion and bloom**.
 
 Optional fields:
 

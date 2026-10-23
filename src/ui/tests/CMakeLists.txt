@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.16)
+project(journal_ui_tests LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+get_filename_component(UI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
+set(DEPS "${UI_DIR}/.pio/libdeps/T-RGB")
+if(NOT EXISTS "${DEPS}/lvgl/CMakeLists.txt")
+  message(FATAL_ERROR "Run pio pkg install -d src/ui -e T-RGB first")
+endif()
+# Same LVGL widgets/fonts/config as the device, but host memory allocation.
+file(READ "${UI_DIR}/src/lv_conf.h" CONFIG)
+string(REPLACE "LV_STDLIB_CUSTOM" "LV_STDLIB_CLIB" CONFIG "${CONFIG}")
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/lv_conf.h" "${CONFIG}")
+set(LV_CONF_PATH "${CMAKE_CURRENT_BINARY_DIR}/lv_conf.h" CACHE STRING "" FORCE)
+set(LV_CONF_BUILD_DISABLE_EXAMPLES ON CACHE BOOL "" FORCE)
+set(LV_CONF_BUILD_DISABLE_DEMOS ON CACHE BOOL "" FORCE)
+set(LV_CONF_BUILD_DISABLE_THORVG_INTERNAL ON CACHE BOOL "" FORCE)
+add_subdirectory("${DEPS}/lvgl" lvgl)
+add_executable(journal_ui_test test_ui.cpp)
+target_include_directories(journal_ui_test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${UI_DIR}/src" "${UI_DIR}/../shared" "${DEPS}/ArduinoJson/src")
+target_compile_definitions(journal_ui_test PRIVATE ARDUINOJSON_ENABLE_ARDUINO_STRING=1
+    ARDUINOJSON_ENABLE_ARDUINO_STREAM=0 ARDUINOJSON_ENABLE_ARDUINO_PRINT=0
+    ARDUINOJSON_ENABLE_PROGMEM=0)
+target_link_libraries(journal_ui_test PRIVATE lvgl)
+enable_testing()
+add_test(NAME journal_ui COMMAND journal_ui_test)

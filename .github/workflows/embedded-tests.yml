@@ -1,0 +1,59 @@
+name: Embedded builds and journal tests
+
+on:
+  push:
+    paths:
+      - "src/firmware/**"
+      - "src/ui/**"
+      - "src/shared/**"
+      - ".github/workflows/embedded-tests.yml"
+  pull_request:
+    paths:
+      - "src/firmware/**"
+      - "src/ui/**"
+      - "src/shared/**"
+      - ".github/workflows/embedded-tests.yml"
+
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sh src/shared/tests/run.sh
+      - run: python -m unittest discover -s src/ui/tools -p 'test_*.py' -v
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { project: firmware, environment: release }
+          - { project: firmware, environment: devkit }
+          - { project: firmware, environment: t7s3 }
+          - { project: ui, environment: T-RGB }
+          - { project: ui, environment: T-RGB-serial }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            src/${{ matrix.project }}/.pio/libdeps
+          key: ${{ runner.os }}-pio-${{ matrix.project }}-${{ matrix.environment }}-${{ hashFiles('src/**/platformio.ini') }}
+      - run: pip install platformio==6.2.0
+      # CI overrides WiFi credentials with dummy values.
+      # No devices are contacted or flashed.
+      - run: |
+          printf '#pragma once\n#define WIFI_SSID "ci"\n#define WIFI_PASSWORD "ci"\n' > src/firmware/src/secrets.h
+          printf '#pragma once\n#define WIFI_SSID "ci"\n#define WIFI_PASSWORD "ci"\n' > src/ui/src/secrets.h
+      - run: pio run -d src/${{ matrix.project }} -e ${{ matrix.environment }}
+      - if: matrix.project == 'ui' && matrix.environment == 'T-RGB'
+        run: |
+          cmake -S src/ui/tests -B /tmp/journal-ui-tests
+          cmake --build /tmp/journal-ui-tests -j 2
+          ctest --test-dir /tmp/journal-ui-tests --output-on-failure

@@ -86,7 +86,9 @@ class ShotCreate(Model):
     id: UUID
     setup_revision: Revision
     started_at: AwareDatetime | None = None
-    duration_s: NonNegative
+    duration_s: NonNegative = Field(
+        description="Actual main-brew seconds, including HOLD; excludes preinfusion and bloom."
+    )
     configured_preinfusion_s: NonNegative | None = None
     configured_bloom_s: NonNegative | None = None
     configured_brew_s: NonNegative | None = None
@@ -116,7 +118,9 @@ class Shot(Model):
     setup: Setup
     started_at: AwareDatetime | None
     received_at: AwareDatetime
-    duration_s: NonNegative
+    duration_s: NonNegative = Field(
+        description="Actual main-brew seconds, including HOLD; excludes preinfusion and bloom."
+    )
     configured_preinfusion_s: NonNegative | None
     configured_bloom_s: NonNegative | None
     configured_brew_s: NonNegative | None

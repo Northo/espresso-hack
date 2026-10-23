@@ -3,6 +3,7 @@
 #include "config.h"
 #include "cleaning.h"
 #include "manual_outputs.h"
+#include "brew_timer.h"
 #include "protocol.h"
 #include <Arduino.h>
 #include <WiFi.h>
@@ -34,7 +35,8 @@ static void onRecv(const uint8_t *mac, const uint8_t *data, int len) {
     xQueueSend(rx_queue, &p, 0);
 }
 
-void initDisplayLink(MachineState &) {
+void initDisplayLink(MachineState &state) {
+    state.journal_boot_id = ((uint64_t)esp_random() << 32) | esp_random();
     rx_queue = xQueueCreate(8, sizeof(Packet));
 
     if (esp_now_init() != ESP_OK) {
@@ -73,18 +75,11 @@ static void applyCommand(MachineState &state, const proto::CommandMsg &cmd) {
 
     case proto::CMD_BREW_START:
         if (state.clean_state != CleanState::IDLE) break; // cleaning in progress
-        if (!state.auto_brew_enabled) {
-            state.auto_brew_enabled = true;
-            state.auto_brew_start_time = millis();
-            state.brew_hold = false;
-        }
+        startBrew(state);
         break;
 
     case proto::CMD_BREW_STOP:
-        state.auto_brew_enabled = false;
-        state.brew_hold = false;
-        state.pump_active = false;
-        state.solenoid_active = false;
+        stopBrew(state);
         break;
 
     case proto::CMD_BREW_HOLD_TOGGLE:
@@ -138,11 +133,11 @@ static void brewProgress(const MachineState &state, uint16_t &elapsed_s, uint8_t
     stage = proto::STAGE_NONE;
     if (!state.auto_brew_enabled) return;
 
-    unsigned long elapsed = millis() - state.auto_brew_start_time;
+    uint32_t elapsed = uint32_t(millis()) - state.brew_record.started_ms;
     elapsed_s = (uint16_t)min(elapsed / 1000UL, 65535UL);
-    if (elapsed < (unsigned long)state.auto_brew_preinfusion_duration)
+    if (elapsed < state.brew_record.preinfusion_ms)
         stage = proto::STAGE_PREINFUSION;
-    else if (elapsed < (unsigned long)(state.auto_brew_preinfusion_duration + state.auto_brew_bloom_duration))
+    else if (elapsed < state.brew_record.preinfusion_ms + state.brew_record.bloom_ms)
         stage = proto::STAGE_BLOOM;
     else
         stage = proto::STAGE_BREWING;
@@ -153,9 +148,9 @@ static void sendState(const MachineState &state) {
     msg.type = proto::MSG_STATE;
     msg.temperature_x10 = (int16_t)lround(state.current_temperature * 10);
     msg.setpoint_x10 = (int16_t)lround(state.target_temperature * 10);
-    msg.brew_duration_s = (uint16_t)(state.auto_brew_duration / 1000);
-    msg.preinfusion_s = (uint8_t)min(255L, state.auto_brew_preinfusion_duration / 1000);
-    msg.bloom_s = (uint8_t)min(255L, state.auto_brew_bloom_duration / 1000);
+    msg.brew_duration_s = (uint16_t)((state.auto_brew_enabled ? state.brew_record.configured_brew_ms : state.auto_brew_duration) / 1000);
+    msg.preinfusion_s = (uint8_t)((state.auto_brew_enabled ? state.brew_record.preinfusion_ms : state.auto_brew_preinfusion_duration) / 1000);
+    msg.bloom_s = (uint8_t)((state.auto_brew_enabled ? state.brew_record.bloom_ms : state.auto_brew_bloom_duration) / 1000);
     msg.flags = (state.auto_brew_enabled ? proto::FLAG_BREWING : 0) |
                 (state.mode == ControlMode::BANG_BANG ? proto::FLAG_STEAM : 0) |
                 (state.brew_hold ? proto::FLAG_HOLD : 0) |
@@ -167,7 +162,7 @@ static void sendState(const MachineState &state) {
                      ? proto::FLAG_CLEAN_PUMP : 0);
     msg.thermo_fault = (state.thermo_fault & 0x0F) | ((state.thermo_fault_latched & 0x0F) << 4);
     msg.last_brew_ds = (uint16_t)min(65535UL, state.last_brew_ms / 100);
-    msg.since_brew_s = state.last_brew_end_ms == 0 ? 255 : (uint8_t)min(255UL, (millis() - state.last_brew_end_ms) / 1000);
+    msg.since_brew_s = state.brew_count == 0 ? 255 : (uint8_t)min(255UL, (millis() - state.last_brew_end_ms) / 1000);
     msg.clean_state = (uint8_t)state.clean_state;
     msg.clean_cycle = state.clean_cycle;
     uint16_t elapsed_s;
@@ -176,6 +171,18 @@ static void sendState(const MachineState &state) {
     msg.brew_elapsed_s = elapsed_s;
     msg.brew_stage = stage;
     esp_now_send(PEER, (const uint8_t *)&msg, sizeof(msg));
+    proto::JournalStatusMsg status = {proto::MSG_JOURNAL_STATUS, state.journal_boot_id,
+        state.brew_record.sequence, state.journal_setup_revision};
+    esp_now_send(PEER, (const uint8_t *)&status, sizeof(status));
+    const auto &r = state.brew_record;
+    if (r.phase != BrewRecord::NONE) {
+        proto::ShotMsg shot = {proto::MSG_SHOT, state.journal_boot_id, r.sequence,
+            (uint8_t)r.phase, r.setup_revision, r.duration_ms,
+            (uint8_t)(r.preinfusion_ms / 1000), (uint8_t)(r.bloom_ms / 1000),
+            (uint16_t)(r.configured_brew_ms / 1000), r.setpoint_x10, r.end_temperature_x10};
+        // Retain/repeat only the current result in RAM, not a persistent queue.
+        esp_now_send(PEER, (const uint8_t *)&shot, sizeof(shot));
+    }
 }
 
 void handleDisplayLink(MachineState &state) {
@@ -183,6 +190,14 @@ void handleDisplayLink(MachineState &state) {
 
     Packet p;
     while (xQueueReceive(rx_queue, &p, 0) == pdTRUE) {
+        if (p.len == sizeof(proto::JournalSetupMsg) && p.data[0] == proto::MSG_JOURNAL_SETUP) {
+            proto::JournalSetupMsg setup;
+            memcpy(&setup, p.data, sizeof(setup));
+            // Revisions are append-only. A reordered announcement must not
+            // roll the next shot back to an older selection.
+            if (setup.setup_revision >= state.journal_setup_revision)
+                state.journal_setup_revision = setup.setup_revision;
+        }
         if (p.len == sizeof(proto::CommandMsg) && p.data[0] == proto::MSG_COMMAND) {
             proto::CommandMsg cmd;
             memcpy(&cmd, p.data, sizeof(cmd));

@@ -1,4 +1,4 @@
-"""Bound buffered JSON requests without relying on Content-Length."""
+"""Bound buffered JSON and HTML form requests without trusting Content-Length."""
 
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Message, Receive, Scope, Send

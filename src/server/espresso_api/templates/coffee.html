@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "macros.html" import field, notes, validation_errors with context %}
+{% block title %}{{ coffee.name if coffee else 'Add a coffee bag' }}{% endblock %}
+{% block content %}
+<a class="back-link" href="/coffees">← Coffee bags</a>
+<div class="page-heading"><div><p class="eyebrow">{{ 'Coffee bag' if coffee else 'Something new on the shelf' }}</p><h1>{{ coffee.name if coffee else 'Add a coffee bag.' }}</h1><p class="muted">Each new bag gets its own roast date, notes, and history.</p></div>
+  {% if coffee %}<span class="badge {{ 'finished' if coffee.archived else 'active' }}">{{ 'Finished bag' if coffee.archived else 'Active bag' }}</span>{% endif %}
+</div>
+<div class="detail-layout">
+  <section class="panel">
+    <h2>{{ 'Bag details' if coffee else 'Meet the beans' }}</h2>
+    {{ validation_errors() }}
+    <form method="post" action="{{ '/coffees/' ~ coffee.id if coffee else '/coffees/new' }}">
+      {{ field('name', 'Coffee name', required=true, maxlength=200) }}
+      <div class="form-grid">{{ field('roaster', 'Roaster', maxlength=200) }}{{ field('roast_date', 'Roast date', type='date') }}</div>
+      {{ field('origin', 'Origin', maxlength=200) }}
+      {{ notes('Bag notes') }}
+      <div class="form-actions"><button class="button primary" type="submit">{{ 'Save bag' if coffee else 'Add bag' }}</button><a href="/coffees" class="text-link">Cancel</a></div>
+    </form>
+  </section>
+  <aside class="panel aside-panel">
+    {% if coffee %}
+    <p class="eyebrow">Find your starting point</p><h2>Been here before?</h2>
+    <p>Look back at shots from bags with the same coffee name and roaster. Your previous grind setting is a useful starting point.</p>
+    <a class="button secondary" href="{{ path_query('/shots', name=coffee.name, roaster=coffee.roaster or '') }}">Settings from all matching bags ↗</a>
+    <a class="text-link block-link" href="{{ path_query('/shots', coffee_id=coffee.id) }}">Shots from just this bag →</a>
+    <hr>
+    <h3>{{ 'Ready for another cup?' if coffee.archived else 'Reached the bottom?' }}</h3>
+    <p>{{ 'Restore this bag to make it available for selection again.' if coffee.archived else 'Mark this bag finished to hide it from selection. Its shots and settings stay in the journal.' }}</p>
+    <form method="post" action="/coffees/{{ coffee.id }}/archive">
+      <input type="hidden" name="archived" value="{{ 'false' if coffee.archived else 'true' }}">
+      <button class="button secondary" type="submit">{{ 'Restore bag' if coffee.archived else 'Mark bag finished' }}</button>
+    </form>
+    <p class="hint">Editing these details won't rewrite the snapshots stored with earlier shots.</p>
+    {% else %}
+    <p class="eyebrow">Keep it simple</p><h2>A bag, not a catalogue.</h2>
+    <p>Buying the same coffee again? Add a new record using the same name and roaster, with the new roast date.</p><p>The journal can find previous settings across matching bags. Case and extra whitespace don't matter.</p>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

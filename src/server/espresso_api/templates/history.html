@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "macros.html" import pagination with context %}
+{% block title %}Shots{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><p class="eyebrow">The coffee notebook</p><h1>Every shot, a little closer.</h1><p class="muted">Keep the good ones. Learn from the rest.</p></div>
+  <a class="button primary" href="/setup">Adjust setup <span aria-hidden="true">↗</span></a>
+</div>
+
+<a class="setup-strip" href="/setup">
+  <div><span class="eyebrow">On the counter</span><strong>{{ setup.coffee.name if setup.coffee else 'No coffee selected' }}</strong>
+    <span class="muted">{{ setup.coffee.roaster or 'Roaster not recorded' if setup.coffee else 'Choose a bag to get started' }}</span></div>
+  <div class="setup-metrics"><span>Grind <b>{{ setup.grind_setting|number }}</b></span><span>Dose <b>{{ setup.dose_g|number }}{% if setup.dose_g is not none %} g{% endif %}</b></span><span>Target <b>{{ setup.target_yield_g|number }}{% if setup.target_yield_g is not none %} g{% endif %}</b></span><span aria-hidden="true">→</span></div>
+</a>
+
+<section class="panel">
+  <div class="section-heading"><h2>Shot history</h2><span class="badge">{{ page.total }} shot{{ '' if page.total == 1 else 's' }} in this view</span></div>
+  {% if name is not none %}
+  <div class="type-filter"><span>All bags of <strong>{{ name }}</strong> · {{ roaster or 'Unknown roaster' }}</span><a href="/shots">Clear coffee type ×</a></div>
+  {% endif %}
+  <form class="filters" method="get" action="/shots" hx-push-url="true">
+    {% if name is not none %}<input type="hidden" name="name" value="{{ name }}">{% endif %}
+    {% if roaster is not none %}<input type="hidden" name="roaster" value="{{ roaster }}">{% endif %}
+    <div class="field filter-coffee"><label for="coffee_id">Coffee bag</label>
+      <select id="coffee_id" name="coffee_id">
+        <option value="">All bags</option>
+        {% for coffee in coffees %}<option value="{{ coffee.id }}" {% if selected == coffee.id|string %}selected{% endif %}>{{ coffee.name }} · {{ coffee.roaster or 'Unknown roaster' }} · {{ coffee.roast_date or 'Roast date unknown' }}{% if coffee.archived %} (finished){% endif %}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field"><label for="since">From <span class="optional">UTC</span></label><input id="since" type="date" name="since" value="{{ since or '' }}"></div>
+    <div class="field"><label for="until">Before <span class="optional">UTC</span></label><input id="until" type="date" name="until" value="{{ until or '' }}"></div>
+    <button class="button secondary" type="submit">Filter</button>
+    <a class="text-link" href="/shots">Reset</a>
+  </form>
+
+  {% if page.items %}
+  <div class="shot-list">
+    <div class="shot-list-heading" aria-hidden="true"><span>Coffee &amp; time</span><span>Grind</span><span>Dose → yield</span><span>Total time</span><span>Rating</span></div>
+    {% for shot in page.items %}
+    <a class="shot-row" href="/shots/{{ shot.id }}">
+      <div class="shot-coffee"><strong>{{ shot.setup.coffee.name if shot.setup.coffee else 'Coffee not recorded' }}</strong>
+        <span>{{ shot.setup.coffee.roaster or 'Unknown roaster' if shot.setup.coffee else 'Unknown bag' }}{% if shot.setup.coffee and shot.setup.coffee.roast_date %} · roasted {{ shot.setup.coffee.roast_date }}{% endif %}</span>
+        <time datetime="{{ shot.received_at.isoformat() }}">{{ shot.received_at|utc_time }}</time>
+      </div>
+      <div class="shot-stat"><span class="mobile-label">Grind</span><strong>{{ shot.setup.grind_setting|number }}</strong></div>
+      <div class="shot-stat"><span class="mobile-label">Dose → yield</span><strong>{{ shot.dose_g|number }} → {{ shot.yield_g|number }}<small> g</small></strong></div>
+      <div class="shot-stat"><span class="mobile-label">Total time</span><strong>{{ shot.duration_s|number }}<small> s</small></strong></div>
+      <div class="shot-stat"><span class="mobile-label">Rating</span><span class="rating">{% if shot.rating %}{{ shot.rating }}<small> / 5</small>{% else %}—{% endif %}</span></div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><span class="empty-mark" aria-hidden="true">☕</span><h3>{{ 'No shots match these filters.' if selected or name is not none or since or until else 'Your next good shot starts here.' }}</h3>
+    <p>{{ 'Try another bag or clear the filters.' if selected or name is not none or since or until else 'Add a coffee bag and set up your recipe. Shots will appear here once the machine sends them.' }}</p>
+    <a class="button secondary" href="{{ '/shots' if selected or name is not none or since or until else '/coffees/new' }}">{{ 'Clear filters' if selected or name is not none or since or until else 'Add your first bag' }}</a>
+  </div>
+  {% endif %}
+  {{ pagination() }}
+</section>
+<p class="page-note">Times are shown in UTC, ordered by server receipt. Brew duration includes preinfusion and bloom.</p>
+{% endblock %}

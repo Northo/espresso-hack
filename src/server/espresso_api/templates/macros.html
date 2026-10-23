@@ -1,0 +1,45 @@
+{% macro field(name, label, type='text', required=false, step=none, min=none, max=none, maxlength=none, hint=none) %}
+<div class="field">
+  <label for="{{ name }}">{{ label }}{% if not required %} <span class="optional">optional</span>{% endif %}</label>
+  <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values.get(name) if values.get(name) is not none else '' }}"
+    {% if required %}required{% endif %}{% if step is not none %} step="{{ step }}"{% endif %}
+    {% if min is not none %}min="{{ min }}"{% endif %}{% if max is not none %} max="{{ max }}"{% endif %}
+    {% if maxlength is not none %}maxlength="{{ maxlength }}"{% endif %}
+    {% if type == 'number' %}inputmode="decimal"{% endif %}
+    {% if errors.get(name) %}aria-invalid="true" aria-describedby="{{ name }}-error"{% endif %}>
+  {% if hint %}<small class="hint">{{ hint }}</small>{% endif %}
+  {% if errors.get(name) %}<small id="{{ name }}-error" class="field-error">{{ errors[name] }}</small>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro notes(label='Notes') %}
+<div class="field">
+  <label for="notes">{{ label }} <span class="optional">optional</span></label>
+  <textarea id="notes" name="notes" rows="5" maxlength="4000"
+    {% if errors.get('notes') %}aria-invalid="true" aria-describedby="notes-error"{% endif %}>{{ values.get('notes') or '' }}</textarea>
+  {% if errors.get('notes') %}<small id="notes-error" class="field-error">{{ errors.notes }}</small>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro validation_errors() %}
+{% if errors %}
+<div class="notice error" role="alert">
+  <strong>That wasn't saved. Please check the form.</strong>
+  <ul>{% for field, message in errors.items() %}<li>{{ field|replace('_', ' ')|capitalize }}: {{ message }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro pagination() %}
+{% if previous_url or next_url %}
+<nav class="pagination" aria-label="Pagination">
+  {% if previous_url %}<a class="button secondary" href="{{ previous_url }}">← Previous</a>{% else %}<span></span>{% endif %}
+  <span class="muted">Page {{ page.offset // page.limit + 1 }}</span>
+  {% if next_url %}<a class="button secondary" href="{{ next_url }}">Next →</a>{% else %}<span></span>{% endif %}
+</nav>
+{% endif %}
+{% endmacro %}
+
+{% macro measurement(label, value, unit='') %}
+<div class="measurement"><dt>{{ label }}</dt><dd>{{ value|number }}{% if value is not none and unit %}<small>{{ unit }}</small>{% endif %}</dd></div>
+{% endmacro %}

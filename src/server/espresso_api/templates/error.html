@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}{{ status }}{% endblock %}
+{% block content %}
+<section class="panel empty-state"><p class="eyebrow">{{ status }}</p><h1>{{ 'That page is missing.' if status == 404 else 'Something needs a second look.' }}</h1><p>{{ message }}</p><a class="button primary" href="/shots">Back to the journal</a></section>
+{% endblock %}

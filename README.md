@@ -4,7 +4,7 @@ This page describes trying to install a PID controller on my ECM Casa IV espress
 
 ## Shot journal server
 
-The local FastAPI/SQLite shot journal API lives in [`src/server/`](src/server/README.md).
+The local FastAPI/SQLite shot journal (web UI and API) lives in [`src/server/`](src/server/README.md).
 See its README for Docker setup, API documentation, and development commands.
 
 ## Building the docs

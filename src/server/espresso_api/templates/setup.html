@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "macros.html" import field, validation_errors with context %}
+{% block title %}Current setup{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">Before the next shot</p><h1>What's on the counter?</h1><p class="muted">Choose your bag and starting recipe. These stay selected between shots.</p></div><a class="button secondary" href="/coffees/new">+ Add a bag</a></div>
+<div class="detail-layout">
+  <section class="panel">
+    <h2>Current setup</h2>
+    {{ validation_errors() }}
+    {% if archived %}<div class="notice warning">The selected bag is marked finished. Choose an active bag or clear the selection before saving.</div>{% endif %}
+    <form method="post" action="/setup">
+      <div class="field"><label for="coffee_id">Coffee bag <span class="optional">optional</span></label>
+        <select id="coffee_id" name="coffee_id" {% if errors.get('coffee_id') %}aria-invalid="true" aria-describedby="coffee_id-error"{% endif %}>
+          <option value="">No coffee selected</option>
+          {% for coffee in coffees %}<option value="{{ coffee.id }}" {% if values.get('coffee_id')|string == coffee.id|string %}selected{% endif %}>{{ coffee.name }} · {{ coffee.roaster or 'Unknown roaster' }} · {{ coffee.roast_date or 'Roast date unknown' }}{% if coffee.archived %} (finished){% endif %}</option>{% endfor %}
+        </select>
+        {% if errors.get('coffee_id') %}<small id="coffee_id-error" class="field-error">{{ errors.coffee_id }}</small>{% endif %}
+      </div>
+      {{ field('grind_setting', 'Niche Zero grind setting', type='number', step='any', min='0', hint='Decimals are welcome. Use the number on your dial.') }}
+      <div class="form-grid">{{ field('dose_g', 'Dose (g)', type='number', step='any', min='0.01') }}{{ field('target_yield_g', 'Target yield (g)', type='number', step='any', min='0.01') }}</div>
+      <button class="button primary" type="submit">Save setup</button>
+    </form>
+  </section>
+  <aside class="panel aside-panel">
+    <p class="eyebrow">A starting point, not a rule</p><h2>Build on your last good cup.</h2>
+    {% if setup.coffee %}
+    <p>Look up earlier shots of <strong>{{ setup.coffee.name }}</strong> before changing your recipe.</p>
+    <a class="button secondary" href="{{ path_query('/shots', name=setup.coffee.name, roaster=setup.coffee.roaster or '') }}">Find previous settings ↗</a>
+    {% else %}<p>No bag selected yet. You can still save a grind setting and dose, or add a bag first.</p>{% endif %}
+    <hr><p>Saving creates a new setup revision. Earlier shots keep the settings they were brewed with.</p>
+    <p class="hint">This updates journal metadata only. It does not change the machine's temperature or brew timer, and device integration is still to come.</p>
+    <span class="badge">Current revision {{ setup.revision }}</span>
+  </aside>
+</div>
+{% endblock %}

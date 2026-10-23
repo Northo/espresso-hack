@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "macros.html" import pagination with context %}
+{% block title %}Coffee bags{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">The beans behind the brew</p><h1>Your coffee shelf.</h1><p class="muted">One record per bag. Old favourites are never lost.</p></div><a class="button primary" href="/coffees/new">+ Add a bag</a></div>
+<section class="panel">
+  <form class="filters coffee-filters" method="get" action="/coffees" hx-push-url="true">
+    <div class="field"><label for="q">Find a coffee or roaster</label><input id="q" name="q" type="search" maxlength="200" value="{{ q }}" placeholder="Name or roaster…"></div>
+    <label class="checkbox"><input type="checkbox" name="include_archived" value="true" {% if include_archived %}checked{% endif %}> Include finished bags</label>
+    <button class="button secondary" type="submit">Find bags</button><a class="text-link" href="/coffees">Reset</a>
+  </form>
+  <div class="section-heading"><h2>{{ 'All bags' if include_archived else 'On the shelf' }}</h2><span class="badge">{{ page.total }} bag{{ '' if page.total == 1 else 's' }}</span></div>
+  {% if page.items %}
+  <div class="coffee-grid">
+    {% for coffee in page.items %}
+    <article class="coffee-card">
+      <div class="section-heading"><span class="eyebrow">{{ coffee.roaster or 'Unknown roaster' }}</span><span class="badge {{ 'finished' if coffee.archived else 'active' }}">{{ 'Finished' if coffee.archived else 'Active' }}</span></div>
+      <h3><a href="/coffees/{{ coffee.id }}">{{ coffee.name }}</a></h3>
+      <p>{{ coffee.origin or 'Origin not recorded' }}</p>
+      <p class="muted">Roasted {{ coffee.roast_date or '—' }}</p>
+      <div class="card-actions"><a class="text-link" href="/coffees/{{ coffee.id }}">View bag →</a><a class="text-link" href="{{ path_query('/shots', name=coffee.name, roaster=coffee.roaster or '') }}">Past settings ↗</a></div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><span class="empty-mark" aria-hidden="true">☕</span><h3>{{ 'No matching bags.' if q else 'Make room for something good.' }}</h3><p>{{ 'Try another name or include finished bags.' if q else 'Add a bag with its roaster and roast date to start your journal.' }}</p><a class="button secondary" href="/coffees/new">Add a coffee bag</a></div>
+  {% endif %}
+  {{ pagination() }}
+</section>
+{% endblock %}

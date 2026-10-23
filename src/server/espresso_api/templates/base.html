@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#233c32">
+  <meta name="htmx-config" content='{"allowEval":false,"includeIndicatorStyles":false,"historyCacheSize":0}'>
+  <title>{% block title %}Shot journal{% endblock %} · Espresso</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/journal.css">
+  <script src="/static/vendor/htmx-2.0.8.min.js" defer></script>
+  <script src="/static/journal.js" defer></script>
+</head>
+<body hx-boost="true" hx-target="#app" hx-select="#app" hx-swap="outerHTML" hx-indicator="#loading">
+  <a class="skip-link" href="#main" hx-boost="false">Skip to content</a>
+  <div id="loading" class="loading htmx-indicator" role="status" aria-label="Loading"></div>
+  <div id="network-error" class="network-error" role="alert" hidden>
+    Could not complete that request. Check the connection and try again.
+  </div>
+  <div id="app">
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="/shots"><span class="brand-mark" aria-hidden="true">e.</span> <span>Shot journal<small>A little better, every cup.</small></span></a>
+        <nav aria-label="Main navigation">
+          <a href="/shots" {% if request.url.path.startswith('/shots') %}aria-current="page"{% endif %}>Shots</a>
+          <a href="/coffees" {% if request.url.path.startswith('/coffees') %}aria-current="page"{% endif %}>Coffee bags</a>
+          <a href="/setup" {% if request.url.path == '/setup' %}aria-current="page"{% endif %}>Current setup</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main" tabindex="-1">
+      {% if saved %}<div class="notice success" role="status">Saved. You're all set.</div>{% endif %}
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer"><span>Your coffee, your notes.</span><a href="/docs" hx-boost="false">API docs</a></footer>
+  </div>
+</body>
+</html>

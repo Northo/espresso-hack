@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% from "macros.html" import field, notes, validation_errors, measurement with context %}
+{% block title %}Shot details{% endblock %}
+{% block content %}
+<a class="back-link" href="/shots">← Shot history</a>
+<div class="page-heading">
+  <div><p class="eyebrow">Shot notes</p><h1>{{ shot.setup.coffee.name if shot.setup.coffee else 'Coffee not recorded' }}</h1>
+    <p class="muted">{{ shot.setup.coffee.roaster or 'Unknown roaster' if shot.setup.coffee else 'Unknown bag' }} · received {{ shot.received_at|utc_time }}</p></div>
+  {% if coffee %}<a class="button secondary" href="{{ path_query('/shots', name=coffee.name, roaster=coffee.roaster or '') }}">All bags of this coffee ↗</a>{% endif %}
+</div>
+<div class="detail-layout">
+  <section class="panel">
+    <p class="eyebrow">Captured at brew time</p><h2>The recipe &amp; the result</h2>
+    <dl class="measurements">
+      {{ measurement('Grind setting', shot.setup.grind_setting) }}
+      {{ measurement('Total duration', shot.duration_s, 's') }}
+      {{ measurement('Setpoint', shot.temperature_setpoint_c, '°C') }}
+      {{ measurement('End temperature', shot.end_temperature_c, '°C') }}
+      {{ measurement('Recipe dose', shot.setup.dose_g, 'g') }}
+      {{ measurement('Target yield', shot.setup.target_yield_g, 'g') }}
+    </dl>
+    <h3 class="subheading">Configured stages</h3>
+    <dl class="stages">
+      <div><dt>Preinfusion</dt><dd>{{ shot.configured_preinfusion_s|number }} s</dd></div>
+      <div><dt>Bloom</dt><dd>{{ shot.configured_bloom_s|number }} s</dd></div>
+      <div><dt>Main brew</dt><dd>{{ shot.configured_brew_s|number }} s</dd></div>
+    </dl>
+    <dl class="metadata">
+      <div><dt>Roast date</dt><dd>{{ shot.setup.coffee.roast_date if shot.setup.coffee and shot.setup.coffee.roast_date else 'Not recorded' }}</dd></div>
+      <div><dt>Origin</dt><dd>{{ shot.setup.coffee.origin if shot.setup.coffee and shot.setup.coffee.origin else 'Not recorded' }}</dd></div>
+      <div><dt>Machine start</dt><dd>{{ shot.started_at|utc_time if shot.started_at else 'Clock time not recorded' }}</dd></div>
+      <div><dt>Setup revision</dt><dd>{{ shot.setup.revision }}</dd></div>
+    </dl>
+    {% if coffee %}<a class="text-link" href="/coffees/{{ coffee.id }}">View this bag →</a>{% endif %}
+    <p class="hint">This snapshot stays as it was brewed, even if you edit the bag or change the setup.</p>
+  </section>
+  <section class="panel">
+    <p class="eyebrow">How did it taste?</p><h2>Finish your notes</h2>
+    {{ validation_errors() }}
+    <form method="post" action="/shots/{{ shot.id }}">
+      <div class="form-grid">{{ field('dose_g', 'Actual dose (g)', type='number', step='any', min='0.01') }}{{ field('yield_g', 'Actual yield (g)', type='number', step='any', min='0.01') }}</div>
+      <div class="field"><label for="rating">Rating <span class="optional">optional</span></label>
+        <select id="rating" name="rating" {% if errors.get('rating') %}aria-invalid="true" aria-describedby="rating-error"{% endif %}>
+          <option value="">Not rated</option>
+          {% for rating, label in [(1, 'Not for me'), (2, 'Needs work'), (3, 'Good'), (4, 'Really good'), (5, 'Keep this recipe')] %}
+          <option value="{{ rating }}" {% if values.get('rating')|string == rating|string %}selected{% endif %}>{{ rating }} / 5 — {{ label }}</option>
+          {% endfor %}
+        </select>
+        {% if errors.get('rating') %}<small class="field-error" id="rating-error">{{ errors.rating }}</small>{% endif %}
+      </div>
+      {{ notes('Tasting notes') }}
+      <button class="button primary" type="submit">Save notes</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

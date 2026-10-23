@@ -1,9 +1,9 @@
 # Espresso shot server
 
-A small, unauthenticated **trusted-LAN-only** API built with FastAPI, Pydantic,
-and SQLite. One application process, no separate database service or message
-broker. Firmware, touchscreen integration, and a browser frontend are not
-implemented here yet.
+A small, unauthenticated **trusted-LAN-only** shot journal built with FastAPI,
+Pydantic, and SQLite, with a mobile-friendly Jinja2/HTMX web UI. One application
+process, no separate database service, frontend build pipeline, or message broker.
+Firmware and touchscreen integration are not implemented here yet.
 
 ## Run with Docker
 
@@ -13,7 +13,8 @@ From this directory:
 docker compose up --build -d
 ```
 
-- API: http://localhost:8000/api/v1/health
+- Web UI: http://localhost:8000/
+- API health: http://localhost:8000/api/v1/health
 - Interactive API documentation: http://localhost:8000/docs
 - OpenAPI schema: http://localhost:8000/openapi.json
 
@@ -46,6 +47,43 @@ startup; numbered SQL migrations run automatically in a transaction.
 To listen on your LAN, use `--host 0.0.0.0`. Run one Uvicorn worker; SQLite is
 appropriate for this workload and does not need a multi-process deployment.
 Keep the database on the server's local disk, not an SMB/NFS share.
+
+## Web UI
+
+Open `http://<server-ip>:8000/` on your phone or browser.
+
+- **Shots** (`/shots`): browse paginated history, filter by bag and receipt dates,
+  and view brew settings and measurements.
+- **Shot details** (`/shots/{id}`): correct actual dose/yield and add a rating or
+  tasting notes. Brew measurements and setup snapshots stay immutable.
+- **Coffee bags** (`/coffees`): add/edit bags, search by name or roaster, mark bags
+  finished, or restore them. Each new bag is a new coffee record; there is no
+  separate coffee-type entity.
+- **Current setup** (`/setup`): select an active bag and save grind, dose, and target
+  yield for subsequent shots.
+
+**Past settings** links find shots across bags with matching name and roaster,
+including finished bags. Matching ignores case and repeated/leading/trailing
+whitespace (including Unicode case differences). A missing roaster only matches
+other missing roasters. Matching uses the bags' current names and roasters, so
+correcting a spelling also updates the grouping; displayed shot snapshots remain
+unchanged. Settings are never automatically copied from one bag to another.
+
+Browser date filters use UTC server receipt time: **From** is inclusive and
+**Before** is exclusive. Reload the history page to see newly uploaded shots.
+Shots are submitted through the JSON API; this first UI does not create shots
+manually or change the machine's temperature or brew timer.
+
+Pages use server-rendered HTML, Jinja2 templates, and plain mobile-first CSS.
+Vendored HTMX 2.0.8 enhances links and forms without full-page reloads; everything
+also works with JavaScript disabled. Validation errors retain form input.
+All assets are served locally—no CDN, external fonts, npm, or Node build step.
+See `espresso_api/static/vendor/README.md` for the HTMX source and license.
+
+HTML routes and the existing `/api/v1` routes call the same operations in
+`espresso_api/store.py`; the UI does not make HTTP calls back into the API.
+No database schema changes are needed. Browser form submissions check the Origin
+header when present, but this remains an unauthenticated LAN application.
 
 ## API
 
@@ -204,6 +242,8 @@ uv run --frozen ruff check .
 uv run --frozen ruff format --check .
 ```
 
-Tests use isolated temporary SQLite databases and cover the HTTP API, historical
-snapshots, validation, idempotency, concurrent duplicate submissions, and restart
-persistence. No controller or external server is needed.
+Tests use isolated temporary SQLite databases and cover the JSON API, HTML pages,
+form validation, HTMX redirects, cross-bag name/roaster matching, archiving,
+historical snapshots, idempotency, concurrent duplicate submissions, and restart
+persistence. No controller, browser installation, or external server is needed
+for the pytest suite.

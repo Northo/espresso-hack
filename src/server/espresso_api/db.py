@@ -7,6 +7,11 @@ from pathlib import Path
 from time import monotonic, sleep
 
 
+def normalize_label(value: str | None) -> str:
+    """Match coffee types without case or whitespace differences."""
+    return " ".join((value or "").split()).casefold()
+
+
 class Database:
     def __init__(self, path: str | Path):
         self.path = Path(path)
@@ -16,6 +21,7 @@ class Database:
         connection = sqlite3.connect(self.path, timeout=5, check_same_thread=False)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys = ON")
+        connection.create_function("normalize_label", 1, normalize_label, deterministic=True)
         try:
             yield connection
         finally:

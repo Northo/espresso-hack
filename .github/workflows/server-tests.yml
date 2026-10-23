@@ -1,0 +1,33 @@
+name: Shot server tests
+
+on:
+  push:
+    paths:
+      - "src/server/**"
+      - ".github/workflows/server-tests.yml"
+  pull_request:
+    paths:
+      - "src/server/**"
+      - ".github/workflows/server-tests.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.12"]
+    defaults:
+      run:
+        working-directory: src/server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.27"
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+          cache-dependency-glob: src/server/uv.lock
+      - run: uv sync --frozen --extra dev
+      - run: uv run --frozen ruff check .
+      - run: uv run --frozen ruff format --check .
+      - run: uv run --frozen pytest -q

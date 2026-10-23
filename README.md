@@ -2,6 +2,11 @@
 
 This page describes trying to install a PID controller on my ECM Casa IV espresso machine.
 
+## Shot journal server
+
+The local FastAPI/SQLite shot journal API lives in [`src/server/`](src/server/README.md).
+See its README for Docker setup, API documentation, and development commands.
+
 ## Building the docs
 
 Docs made with [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/).

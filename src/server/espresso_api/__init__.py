@@ -1,0 +1,1 @@
+"""Local espresso shot journal."""
